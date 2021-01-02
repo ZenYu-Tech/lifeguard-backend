@@ -11,7 +11,7 @@ let articleController = {
         where: {
           category: req.params.category, show: true
         },
-        attributes: ['articleId', 'title', 'content', 'category', 'createdAt'],
+        attributes: ['articleId', 'title', 'content', 'category', 'createdAt', 'sort'],
         include: [{
           model: ArticleImage,
           where: { mainImage: true },
@@ -30,6 +30,7 @@ let articleController = {
           title: a.title,
           content: a.content,
           category: a.category,
+          sort: a.sort,
           createdAt: a.createdAt,
           mainImage: base64String,
         }

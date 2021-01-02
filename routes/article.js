@@ -25,7 +25,7 @@ router.get('/article/:category', articleController.frontGetAllArticles)
 router.get('/article/:category/:articleId', articleController.frontGetArticle)
 
 //Back stage
-router.get('/manage/article/:category', articleController.backGetAllArticles)
+router.get('/manage/article/', articleController.backGetAllArticles)
 router.get('/manage/article/:category/:articleId', articleController.backGetArticle)
 router.post('/manage/article/:category', upload, articleController.createArticle)
 router.put('/manage/article/:category/:articleId', upload, articleController.editArticle)
