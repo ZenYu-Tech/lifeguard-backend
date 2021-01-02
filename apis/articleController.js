@@ -29,10 +29,11 @@ let articleController = {
           articleId: a.articleId,
           title: a.title,
           content: a.content,
-          mainImage: base64String
+          category: a.category,
+          createdAt: a.createdAt,
+          mainImage: base64String,
         }
       })
-      // res.type('application/json')
       return res.json(articleWithPicture)
     } catch (err) {
       console.log(err)
@@ -63,7 +64,7 @@ let articleController = {
         }
       })
 
-      return res.json({ articleId: article.articleId, title: article.title, content: article.content, images: pics })
+      return res.json({ articleId: article.articleId, title: article.title, content: article.content, category: article.category, createdAt: article.createdAt, images: pics })
     } catch (err) {
       console.log(err)
     }
