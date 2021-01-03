@@ -18,9 +18,9 @@ script:
   
 deploy:
   provider: heroku
-  api_key:
-    secure: 294de0a4-0ad5-4a77-88e0-20aae9559363
+  api_key: $HEROKU_API_KEY
   app: lifeguard2020
   on:
     repo: ZenYu-Tech/lifeguard-backend
     branch: main
+  skip_cleanup: 'true'  
