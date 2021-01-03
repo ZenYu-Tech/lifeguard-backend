@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 const { v4: uuidv4 } = require('uuid')
 
 let array = [
@@ -11,20 +11,26 @@ let array = [
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.bulkInsert('Files',
-      Array.from({ length: 3 }).map((item, index) =>
-        ({
+      Array.from({ length: 10 }).map((item, index) => {
+        const url = index > 2
+          ? array[0]
+          : array[index]
+        const title = url.split('/')[2]
+        return {
           fileId: uuidv4(),
-          category: 'registration',
-          title: 'file',
-          url: array[index],
+          category: index > 2
+            ? 'certification'
+            : 'registration',
+          title,
+          url,
           show: true,
           createdAt: new Date(),
           updatedAt: new Date(),
-        })
-      ), {});
+        }
+      }), {})
   },
 
   down: (queryInterface, Sequelize) => {
-    return queryInterface.bulkDelete('Files', null, {});
+    return queryInterface.bulkDelete('Files', null, {})
   }
-};
+}

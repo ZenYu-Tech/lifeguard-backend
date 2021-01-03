@@ -9,7 +9,9 @@ module.exports = (sequelize, DataTypes) => {
     category: DataTypes.TEXT,
     title: DataTypes.TEXT,
     content: DataTypes.TEXT('long'),
-    sort: DataTypes.INTEGER,
+    sort: {
+      type: DataTypes.INTEGER,
+    },
     show: DataTypes.BOOLEAN
   }, {});
   Article.associate = function (models) {

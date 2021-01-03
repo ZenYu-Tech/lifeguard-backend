@@ -21,7 +21,7 @@ let fileController = {
     try {
       const files = await File.findAll({ where: { category: req.params.category } })
       const data = files.map(f => {
-        return { fileId: f.fileId, title: f.title }
+        return { fileId: f.fileId, title: f.title, category: f.category }
       })
       res.json(data)
     } catch (err) {

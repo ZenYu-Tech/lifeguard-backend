@@ -18,6 +18,7 @@ let videoController = {
           title: v.title,
           videoUrl: v.videoUrl,
           sort: v.sort,
+          createdAt: v.createdAt,
           image: base64String
         }
       })

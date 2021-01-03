@@ -17,10 +17,11 @@ module.exports = {
         type: Sequelize.TEXT
       },
       sort: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       show: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
+        defaultValue: true
       },
       createdAt: {
         allowNull: false,
