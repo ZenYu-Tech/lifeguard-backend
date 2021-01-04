@@ -7,11 +7,17 @@ const { v4: uuidv4 } = require('uuid')
 let articleController = {
   frontGetAllArticles: async (req, res) => {
     try {
-      const articles = await Article.findAll({
+      const count = req.query.count || 10
+      const page = req.query.page || 1
+
+      const articles = await Article.findAndCountAll({
         where: {
           category: req.params.category, show: true
         },
         attributes: ['articleId', 'title', 'content', 'category', 'createdAt', 'sort'],
+        order: ['sort'],
+        limit: Number(count),
+        offset: (page - 1) * count,
         include: [{
           model: ArticleImage,
           where: { mainImage: true },
@@ -19,7 +25,7 @@ let articleController = {
         }]
       })
 
-      const articleWithPicture = articles.map(a => {
+      const articleWithPicture = articles.rows.map(a => {
 
         const pic = path.join(__dirname, '..', a.ArticleImages[0].url)
         let binaryData = fs.readFileSync(pic)
@@ -35,7 +41,10 @@ let articleController = {
           mainImage: base64String,
         }
       })
-      return res.json(articleWithPicture)
+      return res.json({
+        'articles': articleWithPicture,
+        'total': articles.count
+      })
     } catch (err) {
       console.log(err)
     }
@@ -65,7 +74,14 @@ let articleController = {
         }
       })
 
-      return res.json({ articleId: article.articleId, title: article.title, content: article.content, category: article.category, createdAt: article.createdAt, images: pics })
+      return res.json({
+        articleId: article.articleId,
+        title: article.title,
+        content: article.content,
+        category: article.category,
+        createdAt: article.createdAt,
+        images: pics
+      })
     } catch (err) {
       console.log(err)
     }
@@ -74,9 +90,20 @@ let articleController = {
 
   backGetAllArticles: async (req, res) => {
     try {
-      const articles = await Article.findAll()
+      const count = req.query.count || 10
+      const page = req.query.page || 1
 
-      return res.json(articles)
+      const articles = await Article.findAndCountAll(
+        {
+          order: ['sort'],
+          limit: Number(count),
+          offset: (page - 1) * count,
+        }
+      )
+      return res.json({
+        'total': articles.count,
+        'articles': articles.rows
+      })
     } catch (err) {
       console.log(err)
     }
@@ -104,7 +131,12 @@ let articleController = {
         }
       })
 
-      return res.json({ articleId: article.articleId, title: article.title, content: article.content, images: pics })
+      return res.json({
+        articleId: article.articleId,
+        title: article.title,
+        content: article.content,
+        images: pics
+      })
     } catch (err) {
       console.log(err)
     }

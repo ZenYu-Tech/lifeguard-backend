@@ -14,7 +14,7 @@ module.exports = {
     ])
 
     return queryInterface.bulkInsert('ArticleImages',
-      Array.from({ length: 5 }).map((item, index) =>
+      Array.from({ length: 50 }).map((item, index) =>
         ({
           articleImageId: uuidv4(),
           ArticleId: articleIdArray[index],

@@ -7,9 +7,20 @@ let videoController = {
 
   getAllVideos: async (req, res) => {
     try {
-      const videos = await Video.findAll()
+      const count = req.query.count || 10
+      const page = req.query.page || 1
 
-      const dataWithPic = videos.map(v => {
+      const videos = await Video.findAndCountAll(
+        {
+          where: { show: true },
+          order: ['sort'],
+          limit: Number(count),
+          offset: (page - 1) * count,
+        },
+
+      )
+
+      const dataWithPic = videos.rows.map(v => {
         const pic = path.join(__dirname, '..', v.imageUrl)
         let binaryData = fs.readFileSync(pic)
         let base64String = new Buffer.from(binaryData).toString("base64")

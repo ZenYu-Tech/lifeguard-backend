@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid')
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     return queryInterface.bulkInsert('Articles',
-      Array.from({ length: 5 }).map((item, index) =>
+      Array.from({ length: 50 }).map((item, index) =>
         ({
           articleId: uuidv4(),
           category: 'news',
