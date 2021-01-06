@@ -138,6 +138,23 @@ let videoController = {
     } catch (err) {
       console.log(err)
     }
+  },
+  deleteVideo: async (req, res) => {
+    try {
+      const video = await video.findOne({ where: { videoId: req.params.videoId } })
+
+      await video.update({
+        show: false
+      })
+
+      return res.json({
+        status: 'success',
+        message: 'delete video successfully'
+      })
+
+    } catch (err) {
+      console.log(err)
+    }
   }
 }
 

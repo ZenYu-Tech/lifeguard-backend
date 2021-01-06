@@ -22,5 +22,6 @@ const upload = multer({
 router.get('/', videoController.backGetAllVideos)
 router.post('/', upload, videoController.createVideo)
 router.put('/:videoId', upload, videoController.editVideo)
+router.delete('/:videoId', videoController.deleteVideo)
 
 module.exports = router
