@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const videoController = require('../apis/videoController')
+const fileController = require('../../apis/fileController')
 // const userController = require('../apis/userController')
 // const multer = require('multer')
 // const upload = multer({ dest: 'temp/' })
@@ -9,6 +9,7 @@ const videoController = require('../apis/videoController')
 // const authenticated = passport.authenticate('jwt', { session: false })
 
 //Front stage
-router.get('/', videoController.getAllVideos)
+router.get('/download/:fileId', fileController.downloadFile)
+router.get('/:category', fileController.getAllFiles)
 
 module.exports = router
