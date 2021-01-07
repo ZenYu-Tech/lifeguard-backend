@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
     category: DataTypes.STRING,
     title: DataTypes.TEXT,
     url: DataTypes.TEXT,
+    sort: DataTypes.INTEGER,
     show: DataTypes.BOOLEAN
   }, {});
   File.associate = function (models) {

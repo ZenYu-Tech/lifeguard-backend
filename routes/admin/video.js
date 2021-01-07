@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const videoController = require('../../apis/videoController')
 const multer = require('multer')
-const path = require('path')
+// const path = require('path')
 
 const storage = multer.diskStorage({
   destination: './upload/video_image/',

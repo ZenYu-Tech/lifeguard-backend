@@ -7,10 +7,10 @@ const file = require('./front-stage/file')
 const video = require('./front-stage/video')
 
 module.exports = (app) => {
-  app.use('/articles', article)
-  app.use('/files', file)
-  app.use('/videos', video)
-  app.use('/manage/articles', adminArticle)
-  app.use('/manage/files', adminFile)
-  app.use('/manage/videos', adminVideo)
+  app.use('/article', article)
+  app.use('/file', file)
+  app.use('/video', video)
+  app.use('/manage/article', adminArticle)
+  app.use('/manage/file', adminFile)
+  app.use('/manage/video', adminVideo)
 }
