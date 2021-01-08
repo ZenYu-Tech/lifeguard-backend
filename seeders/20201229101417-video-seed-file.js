@@ -9,7 +9,7 @@ module.exports = {
           videoId: uuidv4(),
           title: '跳水教學',
           videoUrl: 'https://www.youtube.com/',
-          imageUrl: 'upload/article_image/test.jpg',
+          imageUrl: 'upload/video_image/test.jpg',
           sort: index + 1,
           show: true,
           createdAt: new Date(),
