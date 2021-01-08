@@ -2,9 +2,9 @@
 const { v4: uuidv4 } = require('uuid')
 
 let array = [
-  'upload/file/test.doc',
-  'upload/file/test.pdf',
-  'upload/file/test.odt'
+  'upload/file/registration/test.doc',
+  'upload/file/registration/test.pdf',
+  'upload/file/registration/test.odt'
 ]
 
 
@@ -23,6 +23,7 @@ module.exports = {
             : 'registration',
           title,
           url,
+          sort: index + 1,
           show: true,
           createdAt: new Date(),
           updatedAt: new Date(),

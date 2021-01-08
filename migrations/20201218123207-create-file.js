@@ -16,6 +16,9 @@ module.exports = {
       url: {
         type: Sequelize.TEXT
       },
+      sort: {
+        type: Sequelize.INTEGER,
+      },
       show: {
         type: Sequelize.BOOLEAN,
         defaultValue: true
