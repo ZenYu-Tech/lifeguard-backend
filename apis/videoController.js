@@ -81,14 +81,12 @@ let videoController = {
       const { title, url } = req.body
       const { file } = req
 
-      const allVideos = await Video.findAll()
-
       await Video.create({
         videoId: uuidv4(),
         title,
         videoUrl: url,
         imageUrl: file.path,
-        sort: allVideos.length + 1,
+        sort: await Video.count() + 1,
       })
 
       return res.json({

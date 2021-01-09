@@ -147,14 +147,12 @@ let articleController = {
       const category = req.params.category
       const { files } = req
 
-      const allArticles = await Article.findAll({ where: { category: category } })
-
       const article = await Article.create({
         articleId: uuidv4(),
         title,
         category,
         content,
-        sort: allArticles.length + 1,
+        sort: await Article.count({ where: { category: category } }) + 1,
       })
 
       console.log(article, 'article')

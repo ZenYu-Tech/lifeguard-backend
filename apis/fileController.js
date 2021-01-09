@@ -52,16 +52,15 @@ let fileController = {
 
   createFile: async (req, res) => {
     try {
+      const { category } = req.params
       const { file } = req
-
-      const allFile = await File.findAll()
 
       await File.create({
         fileId: uuidv4(),
         title: req.body.title,
-        category: req.params.category,
+        category: category,
         url: file.path,
-        sort: allFile.length + 1,
+        sort: await File.count({ where: { category: category } }) + 1,
       })
 
       return res.json({
