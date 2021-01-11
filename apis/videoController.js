@@ -26,7 +26,7 @@ let videoController = {
         return {
           videoId: v.videoId,
           title: v.title,
-          videoUrl: v.videoUrl,
+          embedIframe: v.embed,
           sort: v.sort,
           createdAt: v.createdAt,
           image: base64String
@@ -68,7 +68,7 @@ let videoController = {
         return {
           videoId: v.videoId,
           title: v.title,
-          embedIframe: v.videoUrl,
+          embedIframe: v.embed,
           show: v.show,
           sort: v.sort,
           createdAt: v.createdAt,
@@ -112,7 +112,7 @@ let videoController = {
       await Video.create({
         videoId: uuidv4(),
         title,
-        videoUrl: embedIframe,
+        embed: embedIframe,
         sort: await Video.count() + 1,
       })
 
@@ -146,7 +146,7 @@ let videoController = {
 
       await video.update({
         title,
-        videoUrl: embedIframe,
+        embed: embedIframe,
       })
 
       return res.json({

@@ -10,7 +10,7 @@ module.exports = {
       title: {
         type: Sequelize.TEXT
       },
-      videoUrl: {
+      embed: {
         type: Sequelize.TEXT
       },
       imageUrl: {
