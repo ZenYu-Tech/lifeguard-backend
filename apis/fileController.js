@@ -13,7 +13,13 @@ let fileController = {
 
       let binaryData = fs.readFileSync(data)
       let base64String = new Buffer.from(binaryData).toString("base64")
-      res.json(base64String)
+
+      return res.json({
+        message: '成功下載檔案',
+        result: {
+          file: base64String
+        }
+      })
     } catch (err) {
       console.log(err)
     }
@@ -26,7 +32,12 @@ let fileController = {
         order: ['sort'],
       })
 
-      res.json(files)
+      return res.json({
+        message: '成功獲得檔案',
+        result: {
+          files: files.rows
+        }
+      })
     } catch (err) {
       console.log(err)
     }
@@ -44,7 +55,20 @@ let fileController = {
         offset: (page - 1) * count,
       })
 
-      res.json({ 'total': files.count, 'files': files.rows })
+      return res.json({
+        message: '成功獲得檔案',
+        result: {
+          pagination: {
+            page,
+            count,
+            totalCount: files.count,
+            totalPage: Math.ceil(files.count / count)
+          },
+          files: files.rows
+        }
+      })
+
+
     } catch (err) {
       console.log(err)
     }
@@ -55,6 +79,13 @@ let fileController = {
       const { category } = req.params
       const { file } = req
 
+      if (!file) {
+        return res.json({
+          message: '請夾帶檔案',
+          result: {}
+        })
+      }
+
       await File.create({
         fileId: uuidv4(),
         title: req.body.title,
@@ -64,8 +95,8 @@ let fileController = {
       })
 
       return res.json({
-        status: 'success',
-        message: 'create file successfully'
+        message: '成功新增檔案',
+        result: {}
       })
     } catch (err) {
       console.log(err)
@@ -73,7 +104,15 @@ let fileController = {
   },
   editFile: async (req, res) => {
     try {
+      const { title } = req.body
       const { file } = req
+
+      if (!title) {
+        return res.json({
+          message: '請輸入Title',
+          result: {}
+        })
+      }
 
       if (file) {
         const theFile = await File.findOne({ where: { fileId: req.params.fileId } })
@@ -82,13 +121,13 @@ let fileController = {
         fs.unlinkSync(delPath)
 
         await theFile.update({
-          title: req.body.title,
+          title: title,
           url: file.path
         })
 
         return res.json({
-          status: 'success',
-          message: 'edit file successfully'
+          message: '成功編輯影片',
+          result: {}
         })
       } else {
         const theFile = await File.findOne({ where: { fileId: req.params.fileId } })
@@ -98,8 +137,8 @@ let fileController = {
         })
 
         return res.json({
-          status: 'success',
-          message: 'edit file successfully'
+          message: '成功編輯影片',
+          result: {}
         })
       }
 
@@ -116,8 +155,8 @@ let fileController = {
       })
 
       return res.json({
-        status: 'success',
-        message: 'delete file successfully'
+        message: '成功刪除影片',
+        result: {}
       })
     } catch (err) {
       console.log(err)

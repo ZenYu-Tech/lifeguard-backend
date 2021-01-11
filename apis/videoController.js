@@ -33,9 +33,17 @@ let videoController = {
         }
       })
 
-      res.json({
-        'total': videos.count,
-        'videos': dataWithPic
+      return res.json({
+        message: '成功取得影片資料',
+        result: {
+          pagination: {
+            page,
+            count,
+            totalCount: videos.count,
+            totalPage: Math.ceil(videos.count / count)
+          },
+          videos: dataWithPic
+        }
       })
 
     } catch (err) {
@@ -60,7 +68,7 @@ let videoController = {
         return {
           videoId: v.videoId,
           title: v.title,
-          videoUrl: v.videoUrl,
+          embedIframe: v.videoUrl,
           show: v.show,
           sort: v.sort,
           createdAt: v.createdAt,
@@ -68,9 +76,17 @@ let videoController = {
         }
       })
 
-      res.json({
-        'total': videos.count,
-        'videos': dataWithPic
+      return res.json({
+        message: '成功取得影片資料',
+        result: {
+          pagination: {
+            page,
+            count,
+            totalCount: videos.count,
+            totalPage: Math.ceil(videos.count / count)
+          },
+          videos: dataWithPic
+        }
       })
     } catch (err) {
       console.log(err)
@@ -78,20 +94,31 @@ let videoController = {
   },
   createVideo: async (req, res) => {
     try {
-      const { title, url } = req.body
-      const { file } = req
+      const { title, embedIframe } = req.body
+
+      if (!tilte) {
+        return res.json({
+          message: '請輸入Title',
+          result: {}
+        })
+      }
+      if (!embedIframe) {
+        return res.json({
+          message: '請輸入iframe',
+          result: {}
+        })
+      }
 
       await Video.create({
         videoId: uuidv4(),
         title,
-        videoUrl: url,
-        imageUrl: file.path,
+        videoUrl: embedIframe,
         sort: await Video.count() + 1,
       })
 
       return res.json({
-        status: 'success',
-        message: 'create video successfully'
+        message: '成功新增影片',
+        result: {}
       })
 
     } catch (err) {
@@ -100,39 +127,33 @@ let videoController = {
   },
   editVideo: async (req, res) => {
     try {
-      const { title, url } = req.body
-      const { file } = req
+      const { title, embedIframe } = req.body
 
-      if (file) {
-        const video = await Video.findOne({ where: { videoId: req.params.videoId } })
-
-        const delPath = path.join(__dirname, '..', video.imageUrl)
-        fs.unlinkSync(delPath)
-
-        await video.update({
-          title,
-          videoUrl: url,
-          imageUrl: file.path,
-        })
-
+      if (!tilte) {
         return res.json({
-          status: 'success',
-          message: 'edit video successfully'
-        })
-
-      } else {
-        const video = await Video.findOne({ where: { videoId: req.params.videoId } })
-
-        await video.update({
-          title,
-          videoUrl: url,
-        })
-
-        return res.json({
-          status: 'success',
-          message: 'edit video successfully'
+          message: '請輸入Title',
+          result: {}
         })
       }
+      if (!embedIframe) {
+        return res.json({
+          message: '請輸入iframe',
+          result: {}
+        })
+      }
+
+      const video = await Video.findOne({ where: { videoId: req.params.videoId } })
+
+      await video.update({
+        title,
+        videoUrl: embedIframe,
+      })
+
+      return res.json({
+        message: '成功編輯影片',
+        result: {}
+      })
+
     } catch (err) {
       console.log(err)
     }
@@ -144,10 +165,9 @@ let videoController = {
       await video.update({
         show: false
       })
-
       return res.json({
-        status: 'success',
-        message: 'delete video successfully'
+        message: '成功刪除影片',
+        result: {}
       })
 
     } catch (err) {

@@ -42,8 +42,16 @@ let articleController = {
         }
       })
       return res.json({
-        'articles': articleWithPicture,
-        'total': articles.count
+        message: '成功獲得文章',
+        result: {
+          pagination: {
+            page,
+            count,
+            totalCount: articles.count,
+            totalPage: Math.ceil(articles.count / count)
+          },
+          articles: articleWithPicture,
+        }
       })
     } catch (err) {
       console.log(err)
@@ -75,17 +83,19 @@ let articleController = {
       })
 
       return res.json({
-        articleId: article.articleId,
-        title: article.title,
-        content: article.content,
-        category: article.category,
-        createdAt: article.createdAt,
-        images: pics
+        message: '成功獲得文章',
+        result: {
+          articleId: article.articleId,
+          title: article.title,
+          content: article.content,
+          category: article.category,
+          createdAt: article.createdAt,
+          images: pics
+        }
       })
     } catch (err) {
       console.log(err)
     }
-
   },
 
   backGetAllArticles: async (req, res) => {
@@ -101,8 +111,16 @@ let articleController = {
         }
       )
       return res.json({
-        'total': articles.count,
-        'articles': articles.rows
+        message: '成功獲得文章',
+        result: {
+          pagination: {
+            page,
+            count,
+            totalCount: articles.count,
+            totalPage: Math.ceil(articles.count / count)
+          },
+          articles: articles.rows
+        }
       })
     } catch (err) {
       console.log(err)
@@ -132,10 +150,13 @@ let articleController = {
       })
 
       return res.json({
-        articleId: article.articleId,
-        title: article.title,
-        content: article.content,
-        images: pics
+        message: '成功載入文章',
+        result: {
+          articleId: article.articleId,
+          title: article.title,
+          content: article.content,
+          images: pics
+        }
       })
     } catch (err) {
       console.log(err)
@@ -147,6 +168,20 @@ let articleController = {
       const category = req.params.category
       const { files } = req
 
+      if (!title) {
+        return res.json({
+          message: '請輸入Title',
+          result: {}
+        })
+      }
+
+      if (files.length === 0) {
+        return res.json({
+          message: '請夾帶首頁圖',
+          result: {}
+        })
+      }
+
       const article = await Article.create({
         articleId: uuidv4(),
         title,
@@ -154,8 +189,6 @@ let articleController = {
         content,
         sort: await Article.count({ where: { category: category } }) + 1,
       })
-
-      console.log(article, 'article')
 
       for (i = 0; files.length > i; i++) {
         await ArticleImage.create({
@@ -167,8 +200,8 @@ let articleController = {
       }
 
       return res.json({
-        status: 'success',
-        message: 'create article successfully'
+        message: '成功新增文章',
+        result: {}
       })
     } catch (err) {
       console.log(err)
@@ -179,6 +212,13 @@ let articleController = {
       const { title, content, mainImage, deleteImage } = req.body
       const { articleId, category } = req.params
       const { files } = req
+
+      if (!title) {
+        return res.json({
+          message: '請輸入Title',
+          result: {}
+        })
+      }
 
       let delImageArray = []
 
@@ -239,8 +279,8 @@ let articleController = {
       // }
 
       return res.json({
-        status: 'success',
-        message: 'edit article successfully'
+        message: '成功編輯文章',
+        result: {}
       })
     } catch (err) {
       console.log(err)
@@ -256,8 +296,8 @@ let articleController = {
       })
 
       return res.json({
-        status: 'success',
-        message: 'delete article successfully'
+        message: '成功刪除文章',
+        result: {}
       })
 
     } catch (err) {
