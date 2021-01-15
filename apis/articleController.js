@@ -162,11 +162,9 @@ let articleController = {
   },
   createArticle: async (req, res) => {
     try {
-      const { title, content } = req.body
+      const { title, content, mainImageIndex } = req.body
       const category = req.params.category
       const { files } = req
-
-      console.log(files, 'files')
 
       if (!title) {
         return res.json({
@@ -182,6 +180,13 @@ let articleController = {
         })
       }
 
+      if (!mainImageIndex) {
+        return res.json({
+          message: '請夾帶mainImageIndex參數',
+          result: {}
+        })
+      }
+
       const article = await Article.create({
         articleId: uuidv4(),
         title,
@@ -191,17 +196,20 @@ let articleController = {
       })
 
       for (i = 0; files.length > i; i++) {
+
+        let mainImage = false
+        if (i === Number(mainImageIndex)) { mainImage = true }
+
         const image = await Image.create({
           imageId: uuidv4(),
           url: files[i].path,
-
         })
 
         await ArticleImage.create({
           articleImageId: uuidv4(),
           ArticleId: article.articleId,
           ImageId: image.imageId,
-          mainImage: true,
+          mainImage,
         })
 
       }
@@ -216,7 +224,7 @@ let articleController = {
   },
   editArticle: async (req, res) => {
     try {
-      const { title, content, mainImage, deleteImage } = req.body
+      const { title, content, mainImageIndex } = req.body
       const { articleId, category } = req.params
       const { files } = req
 
@@ -227,63 +235,55 @@ let articleController = {
         })
       }
 
-      let delImageArray = []
-
-      if (Array.isArray(deleteImage)) {
-        delImageArray = deleteImage
-      } else {
-        if (deleteImage) {
-          delImageArray.push(deleteImage)
-        }
+      if (!mainImageIndex) {
+        return res.json({
+          message: '請帶入mainImageIndex參數',
+          result: {}
+        })
       }
 
+      //updated article text and title
       const article = await Article.findOne({
         where: { category: category, articleId: articleId }
       })
 
-      const updateArticleText = await article.update({ title, content })
+      await article.update({ title, content })
 
+      //identify old image is main image or not
+      const orignalMainImage = await ArticleImage.findOne({ where: { ArticleId: articleId, mainImage: true } })
 
+      if (orignalMainImage.ImageId !== mainImageIndex) {
 
-      //create image
+        await orignalMainImage.update({
+          mainImage: false
+        })
+
+        const changeInOldImage = await ArticleImage.findOne({ where: { ArticleId: articleId, ImageId: mainImageIndex } })
+
+        if (changeInOldImage) {
+
+          await changeInOldImage.update({
+            mainImage: true
+          })
+        }
+      }
+
+      //create image and identify main image or not
       for (i = 0; files.length > i; i++) {
-        await ArticleImage.create({
-          articleImageId: uuidv4(),
-          ArticleId: updateArticleText.articleId,
+        let mainImage = false
+        if (i === Number(mainImageIndex)) { mainImage = true }
+
+        const image = await Image.create({
+          imageId: uuidv4(),
           url: files[i].path,
         })
-      }
-
-      const articleImages = await ArticleImage.findAll({ where: { ArticleId: articleId, show: true } })
-
-      //hidden image and set main image 
-      //需要辨識新增的圖案是否為main image 因為在前端新增的圖片沒有articleImageId
-      for (i = 0; articleImages.length > i; i++) {
-        delImageArray.forEach(async d => {
-          if (d === articleImages[i].articleImageId) {
-            await articleImages[i].update({
-              show: false
-            })
-          }
+        await ArticleImage.create({
+          articleImageId: uuidv4(),
+          ArticleId: article.articleId,
+          ImageId: image.imageId,
+          mainImage,
         })
-
-        if (articleImages[i].articleImageId !== mainImage) {
-          await articleImages[i].update({ mainImage: false })
-        } else {
-          await articleImages[i].update({ mainImage: true })
-        }
-
       }
-
-      //set main image
-      // const updateImages = await ArticleImage.findAll({ where: { ArticleId: articleId, show: true } })
-      // for (i = 0; updateImages.length > i; i++) {
-      //   if (updateImages[i].articleImageId !== mainImage) {
-      //     await updateImages[i].update({ mainImage: false })
-      //   } else {
-      //     await updateImages[i].update({ mainImage: true })
-      //   }
-      // }
 
       return res.json({
         message: '成功編輯文章',
