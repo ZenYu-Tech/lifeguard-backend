@@ -1,5 +1,5 @@
 const db = require('../models')
-const { Article, ArticleImage } = db
+const { Article, ArticleImage, Image } = db
 const path = require('path')
 const fs = require('fs')
 const { v4: uuidv4 } = require('uuid')
@@ -18,16 +18,13 @@ let articleController = {
         order: ['sort'],
         limit: Number(count),
         offset: (page - 1) * count,
-        include: [{
-          model: ArticleImage,
-          where: { mainImage: true },
-          attributes: ['articleImageId', 'url']
-        }]
+        include: [
+          { model: ArticleImage, where: { mainImage: true }, include: { model: Image } }]
       })
 
-      const articleWithPicture = articles.rows.map(a => {
+      const articleWithPicture = articles.rows.map(async a => {
 
-        const pic = path.join(__dirname, '..', a.ArticleImages[0].url)
+        const pic = path.join(__dirname, '..', a.ArticleImages[0].Image.url)
         let binaryData = fs.readFileSync(pic)
         let base64String = new Buffer.from(binaryData).toString("base64")
 
@@ -53,6 +50,7 @@ let articleController = {
           articles: articleWithPicture,
         }
       })
+
     } catch (err) {
       console.log(err)
     }
@@ -64,13 +62,13 @@ let articleController = {
         where: { category: req.params.category, articleId: req.params.articleId, show: true },
         attributes: ['articleId', 'title', 'content', 'category', 'sort', 'createdAt'],
         include: [{
-          model: ArticleImage,
-          where: { show: true },
-          attributes: ['articleImageId', 'url', 'mainImage']
+          model: Image,
+          as: 'images',
+          attributes: ['imageId', 'url']
         }]
       })
 
-      const pics = article.ArticleImages.map(image => {
+      const pics = article.images.map(image => {
 
         const pic = path.join(__dirname, '..', image.url)
         let binaryData = fs.readFileSync(pic)
@@ -131,13 +129,13 @@ let articleController = {
       const article = await Article.findOne({
         where: { category: req.params.category, articleId: req.params.articleId },
         include: [{
-          model: ArticleImage,
-          where: { show: true },
-          attributes: ['articleImageId', 'url', 'mainImage']
+          model: Image,
+          as: 'images',
+          attributes: ['imageId', 'url']
         }]
       })
 
-      const pics = article.ArticleImages.map(image => {
+      const pics = article.images.map(image => {
 
         const pic = path.join(__dirname, '..', image.url)
         let binaryData = fs.readFileSync(pic)
@@ -168,6 +166,8 @@ let articleController = {
       const category = req.params.category
       const { files } = req
 
+      console.log(files, 'files')
+
       if (!title) {
         return res.json({
           message: '請輸入Title',
@@ -191,12 +191,19 @@ let articleController = {
       })
 
       for (i = 0; files.length > i; i++) {
+        const image = await Image.create({
+          imageId: uuidv4(),
+          url: files[i].path,
+
+        })
+
         await ArticleImage.create({
           articleImageId: uuidv4(),
           ArticleId: article.articleId,
-          url: files[i].path,
+          ImageId: image.imageId,
           mainImage: true,
         })
+
       }
 
       return res.json({
