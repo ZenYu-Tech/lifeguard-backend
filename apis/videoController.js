@@ -96,14 +96,14 @@ let videoController = {
     try {
       const { title, embedIframe } = req.body
 
-      if (!tilte) {
-        return res.json({
+      if (!title) {
+        return res.status(403).send({
           message: '請輸入Title',
           result: {}
         })
       }
       if (!embedIframe) {
-        return res.json({
+        return res.status(403).send({
           message: '請輸入iframe',
           result: {}
         })
@@ -129,14 +129,14 @@ let videoController = {
     try {
       const { title, embedIframe } = req.body
 
-      if (!tilte) {
-        return res.json({
+      if (!title) {
+        return res.status(403).send({
           message: '請輸入Title',
           result: {}
         })
       }
       if (!embedIframe) {
-        return res.json({
+        return res.status(403).send({
           message: '請輸入iframe',
           result: {}
         })
@@ -160,7 +160,7 @@ let videoController = {
   },
   deleteVideo: async (req, res) => {
     try {
-      const video = await video.findOne({ where: { videoId: req.params.videoId } })
+      const video = await Video.findOne({ where: { videoId: req.params.videoId } })
 
       await video.update({
         show: false

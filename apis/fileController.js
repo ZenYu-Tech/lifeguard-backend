@@ -35,7 +35,7 @@ let fileController = {
       return res.json({
         message: '成功獲得檔案',
         result: {
-          files: files.rows
+          files: files
         }
       })
     } catch (err) {
@@ -81,14 +81,14 @@ let fileController = {
       const { file } = req
 
       if (!file) {
-        return res.json({
+        return res.status(403).send({
           message: '請夾帶檔案',
           result: {}
         })
       }
 
       if (!title) {
-        return res.json({
+        return res.status(403).send({
           message: '請輸入title',
           result: {}
         })
@@ -116,7 +116,7 @@ let fileController = {
       const { file } = req
 
       if (!title) {
-        return res.json({
+        return res.status(403).send({
           message: '請輸入Title',
           result: {}
         })
@@ -134,7 +134,7 @@ let fileController = {
         })
 
         return res.json({
-          message: '成功編輯影片',
+          message: '成功編輯檔案',
           result: {}
         })
       } else {
@@ -145,7 +145,7 @@ let fileController = {
         })
 
         return res.json({
-          message: '成功編輯影片',
+          message: '成功編輯檔案',
           result: {}
         })
       }
@@ -163,7 +163,7 @@ let fileController = {
       })
 
       return res.json({
-        message: '成功刪除影片',
+        message: '成功刪除檔案',
         result: {}
       })
     } catch (err) {

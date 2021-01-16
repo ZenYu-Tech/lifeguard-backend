@@ -22,7 +22,7 @@ let articleController = {
           { model: ArticleImage, where: { mainImage: true }, include: { model: Image } }]
       })
 
-      const articleWithPicture = articles.rows.map(async a => {
+      const articleWithPicture = articles.rows.map(a => {
 
         const pic = path.join(__dirname, '..', a.ArticleImages[0].Image.url)
         let binaryData = fs.readFileSync(pic)
@@ -38,6 +38,8 @@ let articleController = {
           mainImage: base64String,
         }
       })
+
+
       return res.json({
         message: '成功獲得文章',
         result: {
@@ -169,21 +171,21 @@ let articleController = {
       const { files } = req
 
       if (!title) {
-        return res.json({
+        return res.status(403).send({
           message: '請輸入Title',
           result: {}
         })
       }
 
       if (files.length === 0) {
-        return res.json({
+        return res.status(403).send({
           message: '請夾帶首頁圖',
           result: {}
         })
       }
 
       if (!mainImageIndex) {
-        return res.json({
+        return res.status(403).send({
           message: '請夾帶mainImageIndex參數',
           result: {}
         })
@@ -231,14 +233,14 @@ let articleController = {
       const { files } = req
 
       if (!title) {
-        return res.json({
+        return res.status(403).send({
           message: '請輸入Title',
           result: {}
         })
       }
 
       if (!mainImageIndex) {
-        return res.json({
+        return res.status(403).send({
           message: '請帶入mainImageIndex參數',
           result: {}
         })
@@ -272,6 +274,7 @@ let articleController = {
 
       //create image and identify main image or not
       for (i = 0; files.length > i; i++) {
+
         let mainImage = false
         if (i === Number(mainImageIndex)) { mainImage = true }
 
