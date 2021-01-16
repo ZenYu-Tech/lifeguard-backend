@@ -9,14 +9,15 @@ let fileController = {
   downloadFile: async (req, res) => {
     try {
       const file = await File.findOne({ where: { fileId: req.params.fileId } })
-      const data = path.join(__dirname, '..', file.url)
 
+      const data = path.join(__dirname, '..', file.url)
       let binaryData = fs.readFileSync(data)
       let base64String = new Buffer.from(binaryData).toString("base64")
 
       return res.json({
         message: '成功下載檔案',
         result: {
+          extension: file.url.split('.')[1],
           file: base64String
         }
       })
