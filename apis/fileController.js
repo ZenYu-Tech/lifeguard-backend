@@ -77,11 +77,19 @@ let fileController = {
   createFile: async (req, res) => {
     try {
       const { category } = req.params
+      const { title } = req.body
       const { file } = req
 
       if (!file) {
         return res.json({
           message: '請夾帶檔案',
+          result: {}
+        })
+      }
+
+      if (!title) {
+        return res.json({
+          message: '請輸入title',
           result: {}
         })
       }

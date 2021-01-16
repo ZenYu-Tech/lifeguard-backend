@@ -14,7 +14,7 @@ const storage = multer.diskStorage({
 })
 const upload = multer({
   storage: storage
-}).array('image')
+}).array('images')
 
 
 router.get('/', articleController.backGetAllArticles)

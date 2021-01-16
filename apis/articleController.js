@@ -320,7 +320,7 @@ let articleController = {
       await ArticleImage.destroy({ where: { ImageId: req.params.imageId, ArticleId: req.params.articleId } })
 
       return res.json({
-        message: '成功刪除文章',
+        message: '成功刪除圖片',
         result: {}
       })
 
