@@ -74,8 +74,8 @@ let articleController = {
         let binaryData = fs.readFileSync(pic)
         let base64String = new Buffer.from(binaryData).toString("base64")
         return {
-          articleImageId: image.articleImageId,
-          main: image.mainImage,
+          imageId: image.imageId,
+          main: image.ArticleImage.mainImage,
           image: base64String
         }
       })
@@ -135,14 +135,16 @@ let articleController = {
         }]
       })
 
+      console.log(article, 'a')
+
       const pics = article.images.map(image => {
 
         const pic = path.join(__dirname, '..', image.url)
         let binaryData = fs.readFileSync(pic)
         let base64String = new Buffer.from(binaryData).toString("base64")
         return {
-          articleImageId: image.articleImageId,
-          main: image.mainImage,
+          imageId: image.imageId,
+          main: image.ArticleImage.mainImage,
           image: base64String
         }
       })
@@ -301,6 +303,21 @@ let articleController = {
       await article.update({
         show: false
       })
+
+      return res.json({
+        message: '成功刪除文章',
+        result: {}
+      })
+
+    } catch (err) {
+      console.log(err)
+    }
+  },
+
+  deleteImageFromArticle: async (req, res) => {
+    try {
+
+      await ArticleImage.destroy({ where: { ImageId: req.params.imageId, ArticleId: req.params.articleId } })
 
       return res.json({
         message: '成功刪除文章',

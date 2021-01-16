@@ -23,4 +23,6 @@ router.post('/:category', upload, articleController.createArticle)
 router.put('/:category/:articleId', upload, articleController.editArticle)
 router.delete('/:category/:articleId', articleController.deleteArticle)
 
+router.delete('/:category/:articleId/:imageId', articleController.deleteImageFromArticle)
+
 module.exports = router
