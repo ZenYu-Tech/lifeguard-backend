@@ -7,19 +7,24 @@ let array = [
   'upload/file/registration/test.odt'
 ]
 
+let category = ['certification', 'plan', 'training']
+
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.bulkInsert('Files',
       Array.from({ length: 10 }).map((item, index) => {
+
+        const randomIndex = Math.floor(Math.random() * 3)
+
         const url = index > 2
-          ? array[0]
+          ? `upload/file/${category[randomIndex]}/default.pdf`
           : array[index]
         const title = url.split('/')[2]
         return {
           fileId: uuidv4(),
           category: index > 2
-            ? 'certification'
+            ? category[randomIndex]
             : 'registration',
           title,
           url,
