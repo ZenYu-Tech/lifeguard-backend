@@ -1,5 +1,5 @@
 const db = require('../models')
-const { Article, ArticleImage } = db
+const { Article, ArticleImage, Image } = db
 const path = require('path')
 const fs = require('fs')
 const { v4: uuidv4 } = require('uuid')
@@ -18,16 +18,13 @@ let articleController = {
         order: ['sort'],
         limit: Number(count),
         offset: (page - 1) * count,
-        include: [{
-          model: ArticleImage,
-          where: { mainImage: true },
-          attributes: ['articleImageId', 'url']
-        }]
+        include: [
+          { model: ArticleImage, where: { mainImage: true }, include: { model: Image } }]
       })
 
       const articleWithPicture = articles.rows.map(a => {
 
-        const pic = path.join(__dirname, '..', a.ArticleImages[0].url)
+        const pic = path.join(__dirname, '..', a.ArticleImages[0].Image.url)
         let binaryData = fs.readFileSync(pic)
         let base64String = new Buffer.from(binaryData).toString("base64")
 
@@ -41,10 +38,21 @@ let articleController = {
           mainImage: base64String,
         }
       })
+
+
       return res.json({
-        'articles': articleWithPicture,
-        'total': articles.count
+        message: '成功獲得文章',
+        result: {
+          pagination: {
+            page,
+            count,
+            totalCount: articles.count,
+            totalPage: Math.ceil(articles.count / count)
+          },
+          articles: articleWithPicture,
+        }
       })
+
     } catch (err) {
       console.log(err)
     }
@@ -56,36 +64,38 @@ let articleController = {
         where: { category: req.params.category, articleId: req.params.articleId, show: true },
         attributes: ['articleId', 'title', 'content', 'category', 'sort', 'createdAt'],
         include: [{
-          model: ArticleImage,
-          where: { show: true },
-          attributes: ['articleImageId', 'url', 'mainImage']
+          model: Image,
+          as: 'images',
+          attributes: ['imageId', 'url']
         }]
       })
 
-      const pics = article.ArticleImages.map(image => {
+      const pics = article.images.map(image => {
 
         const pic = path.join(__dirname, '..', image.url)
         let binaryData = fs.readFileSync(pic)
         let base64String = new Buffer.from(binaryData).toString("base64")
         return {
-          articleImageId: image.articleImageId,
-          main: image.mainImage,
+          imageId: image.imageId,
+          main: image.ArticleImage.mainImage,
           image: base64String
         }
       })
 
       return res.json({
-        articleId: article.articleId,
-        title: article.title,
-        content: article.content,
-        category: article.category,
-        createdAt: article.createdAt,
-        images: pics
+        message: '成功獲得文章',
+        result: {
+          articleId: article.articleId,
+          title: article.title,
+          content: article.content,
+          category: article.category,
+          createdAt: article.createdAt,
+          images: pics
+        }
       })
     } catch (err) {
       console.log(err)
     }
-
   },
 
   backGetAllArticles: async (req, res) => {
@@ -101,8 +111,16 @@ let articleController = {
         }
       )
       return res.json({
-        'total': articles.count,
-        'articles': articles.rows
+        message: '成功獲得文章',
+        result: {
+          pagination: {
+            page,
+            count,
+            totalCount: articles.count,
+            totalPage: Math.ceil(articles.count / count)
+          },
+          articles: articles.rows
+        }
       })
     } catch (err) {
       console.log(err)
@@ -113,29 +131,34 @@ let articleController = {
       const article = await Article.findOne({
         where: { category: req.params.category, articleId: req.params.articleId },
         include: [{
-          model: ArticleImage,
-          where: { show: true },
-          attributes: ['articleImageId', 'url', 'mainImage']
+          model: Image,
+          as: 'images',
+          attributes: ['imageId', 'url']
         }]
       })
 
-      const pics = article.ArticleImages.map(image => {
+      console.log(article, 'a')
+
+      const pics = article.images.map(image => {
 
         const pic = path.join(__dirname, '..', image.url)
         let binaryData = fs.readFileSync(pic)
         let base64String = new Buffer.from(binaryData).toString("base64")
         return {
-          articleImageId: image.articleImageId,
-          main: image.mainImage,
+          imageId: image.imageId,
+          main: image.ArticleImage.mainImage,
           image: base64String
         }
       })
 
       return res.json({
-        articleId: article.articleId,
-        title: article.title,
-        content: article.content,
-        images: pics
+        message: '成功載入文章',
+        result: {
+          articleId: article.articleId,
+          title: article.title,
+          content: article.content,
+          images: pics
+        }
       })
     } catch (err) {
       console.log(err)
@@ -143,34 +166,61 @@ let articleController = {
   },
   createArticle: async (req, res) => {
     try {
-      const { title, content } = req.body
+      const { title, content, mainImageIndex } = req.body
       const category = req.params.category
       const { files } = req
 
-      const allArticles = await Article.findAll({ where: { category: category } })
+      if (!title) {
+        return res.status(403).send({
+          message: '請輸入Title',
+          result: {}
+        })
+      }
+
+      if (files.length === 0) {
+        return res.status(403).send({
+          message: '請夾帶首頁圖',
+          result: {}
+        })
+      }
+
+      if (!mainImageIndex) {
+        return res.status(403).send({
+          message: '請夾帶mainImageIndex參數',
+          result: {}
+        })
+      }
 
       const article = await Article.create({
         articleId: uuidv4(),
         title,
         category,
         content,
-        sort: allArticles.length + 1,
+        sort: await Article.count({ where: { category: category } }) + 1,
       })
 
-      console.log(article, 'article')
-
       for (i = 0; files.length > i; i++) {
+
+        let mainImage = false
+        if (i === Number(mainImageIndex)) { mainImage = true }
+
+        const image = await Image.create({
+          imageId: uuidv4(),
+          url: files[i].path,
+        })
+
         await ArticleImage.create({
           articleImageId: uuidv4(),
           ArticleId: article.articleId,
-          url: files[i].path,
-          mainImage: true,
+          ImageId: image.imageId,
+          mainImage,
         })
+
       }
 
       return res.json({
-        status: 'success',
-        message: 'create article successfully'
+        message: '成功新增文章',
+        result: {}
       })
     } catch (err) {
       console.log(err)
@@ -178,71 +228,71 @@ let articleController = {
   },
   editArticle: async (req, res) => {
     try {
-      const { title, content, mainImage, deleteImage } = req.body
+      const { title, content, mainImageIndex } = req.body
       const { articleId, category } = req.params
       const { files } = req
 
-      let delImageArray = []
-
-      if (Array.isArray(deleteImage)) {
-        delImageArray = deleteImage
-      } else {
-        if (deleteImage) {
-          delImageArray.push(deleteImage)
-        }
+      if (!title) {
+        return res.status(403).send({
+          message: '請輸入Title',
+          result: {}
+        })
       }
 
+      if (!mainImageIndex) {
+        return res.status(403).send({
+          message: '請帶入mainImageIndex參數',
+          result: {}
+        })
+      }
+
+      //updated article text and title
       const article = await Article.findOne({
         where: { category: category, articleId: articleId }
       })
 
-      const updateArticleText = await article.update({ title, content })
+      await article.update({ title, content })
 
+      //identify old image is main image or not
+      const orignalMainImage = await ArticleImage.findOne({ where: { ArticleId: articleId, mainImage: true } })
 
+      if (orignalMainImage.ImageId !== mainImageIndex) {
 
-      //create image
+        await orignalMainImage.update({
+          mainImage: false
+        })
+
+        const changeInOldImage = await ArticleImage.findOne({ where: { ArticleId: articleId, ImageId: mainImageIndex } })
+
+        if (changeInOldImage) {
+
+          await changeInOldImage.update({
+            mainImage: true
+          })
+        }
+      }
+
+      //create image and identify main image or not
       for (i = 0; files.length > i; i++) {
-        await ArticleImage.create({
-          articleImageId: uuidv4(),
-          ArticleId: updateArticleText.articleId,
+
+        let mainImage = false
+        if (i === Number(mainImageIndex)) { mainImage = true }
+
+        const image = await Image.create({
+          imageId: uuidv4(),
           url: files[i].path,
         })
-      }
-
-      const articleImages = await ArticleImage.findAll({ where: { ArticleId: articleId, show: true } })
-
-      //hidden image and set main image 
-      //需要辨識新增的圖案是否為main image 因為在前端新增的圖片沒有articleImageId
-      for (i = 0; articleImages.length > i; i++) {
-        delImageArray.forEach(async d => {
-          if (d === articleImages[i].articleImageId) {
-            await articleImages[i].update({
-              show: false
-            })
-          }
+        await ArticleImage.create({
+          articleImageId: uuidv4(),
+          ArticleId: article.articleId,
+          ImageId: image.imageId,
+          mainImage,
         })
-
-        if (articleImages[i].articleImageId !== mainImage) {
-          await articleImages[i].update({ mainImage: false })
-        } else {
-          await articleImages[i].update({ mainImage: true })
-        }
-
       }
-
-      //set main image
-      // const updateImages = await ArticleImage.findAll({ where: { ArticleId: articleId, show: true } })
-      // for (i = 0; updateImages.length > i; i++) {
-      //   if (updateImages[i].articleImageId !== mainImage) {
-      //     await updateImages[i].update({ mainImage: false })
-      //   } else {
-      //     await updateImages[i].update({ mainImage: true })
-      //   }
-      // }
 
       return res.json({
-        status: 'success',
-        message: 'edit article successfully'
+        message: '成功編輯文章',
+        result: {}
       })
     } catch (err) {
       console.log(err)
@@ -258,8 +308,23 @@ let articleController = {
       })
 
       return res.json({
-        status: 'success',
-        message: 'delete article successfully'
+        message: '成功刪除文章',
+        result: {}
+      })
+
+    } catch (err) {
+      console.log(err)
+    }
+  },
+
+  deleteImageFromArticle: async (req, res) => {
+    try {
+
+      await ArticleImage.destroy({ where: { ImageId: req.params.imageId, ArticleId: req.params.articleId } })
+
+      return res.json({
+        message: '成功刪除圖片',
+        result: {}
       })
 
     } catch (err) {

@@ -16,6 +16,12 @@ module.exports = (sequelize, DataTypes) => {
   }, {});
   Article.associate = function (models) {
     // associations can be defined here
+    Article.belongsToMany(models.Image, {
+      as: 'images',
+      through: { model: models.ArticleImage },
+      foreignKey: 'articleId',
+      otherKey: 'imageId'
+    })
     Article.hasMany(models.ArticleImage, { foreignKey: 'ArticleId', sourceKey: 'articleId' })
   };
   return Article;

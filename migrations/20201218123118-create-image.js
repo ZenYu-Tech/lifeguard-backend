@@ -1,23 +1,14 @@
 'use strict';
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('Videos', {
-      videoId: {
+    await queryInterface.createTable('Images', {
+      imageId: {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.UUID
       },
-      title: {
+      url: {
         type: Sequelize.TEXT
-      },
-      embed: {
-        type: Sequelize.TEXT
-      },
-      imageUrl: {
-        type: Sequelize.TEXT
-      },
-      sort: {
-        type: Sequelize.INTEGER,
       },
       show: {
         type: Sequelize.BOOLEAN,
@@ -34,6 +25,6 @@ module.exports = {
     });
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('Videos');
+    await queryInterface.dropTable('Images');
   }
 };

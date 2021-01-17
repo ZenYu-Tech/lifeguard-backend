@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID
     },
     title: DataTypes.TEXT,
-    videoUrl: DataTypes.TEXT,
+    embed: DataTypes.TEXT,
     imageUrl: DataTypes.TEXT,
     sort: DataTypes.INTEGER,
     show: DataTypes.BOOLEAN,

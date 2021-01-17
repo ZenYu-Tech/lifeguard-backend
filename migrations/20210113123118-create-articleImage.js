@@ -7,23 +7,14 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.UUID
       },
-      ArticleId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        reference: {
-          model: 'Articles',
-          key: 'articleId'
-        }
-      },
-      url: {
-        type: Sequelize.TEXT
-      },
       mainImage: {
         type: Sequelize.BOOLEAN
       },
-      show: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: true
+      ArticleId: {
+        type: Sequelize.UUID,
+      },
+      ImageId: {
+        type: Sequelize.UUID,
       },
       createdAt: {
         allowNull: false,

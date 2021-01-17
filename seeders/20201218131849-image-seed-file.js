@@ -3,23 +3,15 @@
 
 const { v4: uuidv4 } = require('uuid')
 const db = require('../models')
-const { Article } = db
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    let articleIdArray = []
-    const articles = await Article.findAll({ where: { category: 'news' } })
-    articles.forEach(a => [
-      articleIdArray.push(a.articleId)
-    ])
 
-    return queryInterface.bulkInsert('ArticleImages',
-      Array.from({ length: 50 }).map((item, index) =>
+    return queryInterface.bulkInsert('Images',
+      Array.from({ length: 3 }).map((item, index) =>
         ({
-          articleImageId: uuidv4(),
-          ArticleId: articleIdArray[index],
-          url: 'upload/article_image/test.jpg',
-          mainImage: true,
+          imageId: uuidv4(),
+          url: `upload/article_image/test${index + 1}.jpg`,
           show: true,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -28,6 +20,6 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    return queryInterface.bulkDelete('ArticleImages', null, {});
+    return queryInterface.bulkDelete('Images', null, {});
   }
 };

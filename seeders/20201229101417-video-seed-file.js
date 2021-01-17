@@ -8,7 +8,7 @@ module.exports = {
         ({
           videoId: uuidv4(),
           title: '跳水教學',
-          videoUrl: 'https://www.youtube.com/',
+          embed: '<iframe width="560" height="315" src="https://www.youtube.com/embed/aDZN-mJx-xY" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>',
           imageUrl: 'upload/video_image/test.jpg',
           sort: index + 1,
           show: true,
