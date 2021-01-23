@@ -3,16 +3,18 @@ const { Article, ArticleImage, Image } = db
 const path = require('path')
 const fs = require('fs')
 const { v4: uuidv4 } = require('uuid')
+require('dotenv').config()
 
 let articleController = {
   frontGetAllArticles: async (req, res) => {
     try {
-      const count = req.query.count || 10
-      const page = req.query.page || 1
+      const count = Number(req.query.count) || 10
+      const page = Number(req.query.page) || 1
+      const category = req.params.category
 
       const articles = await Article.findAndCountAll({
         where: {
-          category: req.params.category, show: true
+          category, show: true
         },
         attributes: ['articleId', 'title', 'content', 'category', 'createdAt', 'sort'],
         order: ['sort'],
@@ -39,6 +41,7 @@ let articleController = {
         }
       })
 
+      const totalPage = Math.ceil(articles.count / count)
 
       return res.json({
         message: '成功獲得文章',
@@ -46,8 +49,12 @@ let articleController = {
           pagination: {
             page,
             count,
+            previous: page > 1
+              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page - 1}` : '',
+            next: totalPage > page
+              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page + 1}` : '',
             totalCount: articles.count,
-            totalPage: Math.ceil(articles.count / count)
+            totalPage
           },
           articles: articleWithPicture,
         }
@@ -60,6 +67,7 @@ let articleController = {
 
   frontGetArticle: async (req, res) => {
     try {
+
       const article = await Article.findOne({
         where: { category: req.params.category, articleId: req.params.articleId, show: true },
         attributes: ['articleId', 'title', 'content', 'category', 'sort', 'createdAt'],
@@ -69,6 +77,8 @@ let articleController = {
           attributes: ['imageId', 'url']
         }]
       })
+
+      const next = await Article.findOne({ where: { sort: article.sort + 1 } })
 
       const pics = article.images.map(image => {
 
@@ -85,6 +95,9 @@ let articleController = {
       return res.json({
         message: '成功獲得文章',
         result: {
+          next: next !== null
+            ? `${process.env.DOMAIN}/article/news/${next.articleId}`
+            : '',
           articleId: article.articleId,
           title: article.title,
           content: article.content,
@@ -100,8 +113,9 @@ let articleController = {
 
   backGetAllArticles: async (req, res) => {
     try {
-      const count = req.query.count || 10
-      const page = req.query.page || 1
+      const count = Number(req.query.count) || 10
+      const page = Number(req.query.page) || 1
+      const category = req.params.category
 
       const articles = await Article.findAndCountAll(
         {
@@ -110,14 +124,21 @@ let articleController = {
           offset: (page - 1) * count,
         }
       )
+
+      const totalPage = Math.ceil(articles.count / count)
+
       return res.json({
         message: '成功獲得文章',
         result: {
           pagination: {
             page,
             count,
+            previous: page > 1
+              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page - 1}` : '',
+            next: totalPage > page
+              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page + 1}` : '',
             totalCount: articles.count,
-            totalPage: Math.ceil(articles.count / count)
+            totalPage
           },
           articles: articles.rows
         }
@@ -136,8 +157,6 @@ let articleController = {
           attributes: ['imageId', 'url']
         }]
       })
-
-      console.log(article, 'a')
 
       const pics = article.images.map(image => {
 
