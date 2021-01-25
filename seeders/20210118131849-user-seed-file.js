@@ -15,7 +15,7 @@ module.exports = {
       Array.from({ length: 1 }).map((item, index) =>
         ({
           userId: uuidv4(),
-          name: 'lifeguard2020',
+          account: 'lifeguard2020',
           password: hash,
           role: 'admin',
           createdAt: new Date(),

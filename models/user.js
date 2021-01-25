@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       primaryKey: true,
     },
-    name: DataTypes.STRING,
+    account: DataTypes.STRING,
     password: DataTypes.STRING,
     role: DataTypes.STRING,
   }, {});
