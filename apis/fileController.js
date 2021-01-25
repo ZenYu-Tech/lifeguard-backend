@@ -17,6 +17,7 @@ let fileController = {
       return res.json({
         message: '成功下載檔案',
         result: {
+          title: file.title,
           extension: file.url.split('.')[1],
           file: base64String
         }

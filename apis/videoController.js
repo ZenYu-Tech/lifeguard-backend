@@ -3,14 +3,15 @@ const { Video } = db
 const fs = require('fs')
 const path = require('path')
 const { v4: uuidv4 } = require('uuid')
-
+require('dotenv').config()
 
 let videoController = {
 
   getAllVideos: async (req, res) => {
     try {
-      const count = req.query.count || 10
-      const page = req.query.page || 1
+      const count = Number(req.query.count) || 10
+      const page = Number(req.query.page) || 1
+
       const videos = await Video.findAndCountAll(
         {
           where: { show: true },
@@ -33,14 +34,20 @@ let videoController = {
         }
       })
 
+      const totalPage = Math.ceil(videos.count / count)
+
       return res.json({
         message: '成功取得影片資料',
         result: {
           pagination: {
             page,
             count,
+            previous: page > 1
+              ? `${process.env.DOMAIN}/video/?count=${count}&page=${page - 1}` : '',
+            next: totalPage > page
+              ? `${process.env.DOMAIN}/video/?count=${count}&page=${page + 1}` : '',
             totalCount: videos.count,
-            totalPage: Math.ceil(videos.count / count)
+            totalPage
           },
           videos: dataWithPic
         }

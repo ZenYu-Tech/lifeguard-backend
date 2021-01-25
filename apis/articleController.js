@@ -3,20 +3,22 @@ const { Article, ArticleImage, Image } = db
 const path = require('path')
 const fs = require('fs')
 const { v4: uuidv4 } = require('uuid')
+require('dotenv').config()
 
 let articleController = {
   frontGetAllArticles: async (req, res) => {
     try {
-      const count = req.query.count || 10
-      const page = req.query.page || 1
+      const count = Number(req.query.count) || 10
+      const page = Number(req.query.page) || 1
+      const category = req.params.category
 
       const articles = await Article.findAndCountAll({
         where: {
-          category: req.params.category, show: true
+          category, show: true
         },
         attributes: ['articleId', 'title', 'content', 'category', 'createdAt', 'sort'],
         order: ['sort'],
-        limit: Number(count),
+        limit: count,
         offset: (page - 1) * count,
         include: [
           { model: ArticleImage, where: { mainImage: true }, include: { model: Image } }]
@@ -39,6 +41,7 @@ let articleController = {
         }
       })
 
+      const totalPage = Math.ceil(articles.count / count)
 
       return res.json({
         message: '成功獲得文章',
@@ -46,8 +49,12 @@ let articleController = {
           pagination: {
             page,
             count,
+            previous: page > 1
+              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page - 1}` : '',
+            next: totalPage > page
+              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page + 1}` : '',
             totalCount: articles.count,
-            totalPage: Math.ceil(articles.count / count)
+            totalPage
           },
           articles: articleWithPicture,
         }
@@ -60,8 +67,10 @@ let articleController = {
 
   frontGetArticle: async (req, res) => {
     try {
+      const category = req.params.category
+
       const article = await Article.findOne({
-        where: { category: req.params.category, articleId: req.params.articleId, show: true },
+        where: { category, articleId: req.params.articleId, show: true },
         attributes: ['articleId', 'title', 'content', 'category', 'sort', 'createdAt'],
         include: [{
           model: Image,
@@ -69,6 +78,8 @@ let articleController = {
           attributes: ['imageId', 'url']
         }]
       })
+
+      const next = await Article.findOne({ where: { sort: article.sort + 1 } })
 
       const pics = article.images.map(image => {
 
@@ -85,10 +96,13 @@ let articleController = {
       return res.json({
         message: '成功獲得文章',
         result: {
+          next: next !== null
+            ? `${process.env.DOMAIN}/article/${category}/${next.articleId}`
+            : '',
           articleId: article.articleId,
           title: article.title,
           content: article.content,
-          category: article.category,
+          category,
           createdAt: article.createdAt,
           images: pics
         }
@@ -100,24 +114,35 @@ let articleController = {
 
   backGetAllArticles: async (req, res) => {
     try {
-      const count = req.query.count || 10
-      const page = req.query.page || 1
+      const count = Number(req.query.count) || 10
+      const page = Number(req.query.page) || 1
+      const category = req.params.category
 
       const articles = await Article.findAndCountAll(
         {
+          where: {
+            show: true
+          },
           order: ['sort'],
           limit: Number(count),
           offset: (page - 1) * count,
         }
       )
+
+      const totalPage = Math.ceil(articles.count / count)
+
       return res.json({
         message: '成功獲得文章',
         result: {
           pagination: {
             page,
             count,
+            previous: page > 1
+              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page - 1}` : '',
+            next: totalPage > page
+              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page + 1}` : '',
             totalCount: articles.count,
-            totalPage: Math.ceil(articles.count / count)
+            totalPage
           },
           articles: articles.rows
         }
@@ -129,15 +154,13 @@ let articleController = {
   backGetArticle: async (req, res) => {
     try {
       const article = await Article.findOne({
-        where: { category: req.params.category, articleId: req.params.articleId },
+        where: { category: req.params.category, articleId: req.params.articleId, show: true },
         include: [{
           model: Image,
           as: 'images',
           attributes: ['imageId', 'url']
         }]
       })
-
-      console.log(article, 'a')
 
       const pics = article.images.map(image => {
 
@@ -157,6 +180,7 @@ let articleController = {
           articleId: article.articleId,
           title: article.title,
           content: article.content,
+          category: article.category,
           images: pics
         }
       })
@@ -177,14 +201,14 @@ let articleController = {
         })
       }
 
-      if (files.length === 0) {
+      if (files.length === 0 && category === 'experience') {
         return res.status(403).send({
           message: '請夾帶首頁圖',
           result: {}
         })
       }
 
-      if (!mainImageIndex) {
+      if (!mainImageIndex && category === 'experience') {
         return res.status(403).send({
           message: '請夾帶mainImageIndex參數',
           result: {}
@@ -199,23 +223,24 @@ let articleController = {
         sort: await Article.count({ where: { category: category } }) + 1,
       })
 
-      for (i = 0; files.length > i; i++) {
+      if (files.length !== 0) {
+        for (i = 0; files.length > i; i++) {
 
-        let mainImage = false
-        if (i === Number(mainImageIndex)) { mainImage = true }
+          let mainImage = false
+          if (i === Number(mainImageIndex)) { mainImage = true }
 
-        const image = await Image.create({
-          imageId: uuidv4(),
-          url: files[i].path,
-        })
+          const image = await Image.create({
+            imageId: uuidv4(),
+            url: files[i].path,
+          })
 
-        await ArticleImage.create({
-          articleImageId: uuidv4(),
-          ArticleId: article.articleId,
-          ImageId: image.imageId,
-          mainImage,
-        })
-
+          await ArticleImage.create({
+            articleImageId: uuidv4(),
+            ArticleId: article.articleId,
+            ImageId: image.imageId,
+            mainImage,
+          })
+        }
       }
 
       return res.json({
@@ -232,6 +257,8 @@ let articleController = {
       const { articleId, category } = req.params
       const { files } = req
 
+      console.log(mainImageIndex, 'mainImageIndex')
+
       if (!title) {
         return res.status(403).send({
           message: '請輸入Title',
@@ -239,7 +266,7 @@ let articleController = {
         })
       }
 
-      if (!mainImageIndex) {
+      if (!mainImageIndex && category === 'experience') {
         return res.status(403).send({
           message: '請帶入mainImageIndex參數',
           result: {}
@@ -256,38 +283,43 @@ let articleController = {
       //identify old image is main image or not
       const orignalMainImage = await ArticleImage.findOne({ where: { ArticleId: articleId, mainImage: true } })
 
-      if (orignalMainImage.ImageId !== mainImageIndex) {
+      if (orignalMainImage) {
 
-        await orignalMainImage.update({
-          mainImage: false
-        })
+        if (orignalMainImage.ImageId !== mainImageIndex) {
 
-        const changeInOldImage = await ArticleImage.findOne({ where: { ArticleId: articleId, ImageId: mainImageIndex } })
-
-        if (changeInOldImage) {
-
-          await changeInOldImage.update({
-            mainImage: true
+          await orignalMainImage.update({
+            mainImage: false
           })
+
+          const changeInOldImage = await ArticleImage.findOne({ where: { ArticleId: articleId, ImageId: mainImageIndex } })
+
+          if (changeInOldImage) {
+
+            await changeInOldImage.update({
+              mainImage: true
+            })
+          }
         }
       }
 
       //create image and identify main image or not
-      for (i = 0; files.length > i; i++) {
+      if (files.length > 0) {
+        for (i = 0; files.length > i; i++) {
 
-        let mainImage = false
-        if (i === Number(mainImageIndex)) { mainImage = true }
+          let mainImage = false
+          if (i === Number(mainImageIndex)) { mainImage = true }
 
-        const image = await Image.create({
-          imageId: uuidv4(),
-          url: files[i].path,
-        })
-        await ArticleImage.create({
-          articleImageId: uuidv4(),
-          ArticleId: article.articleId,
-          ImageId: image.imageId,
-          mainImage,
-        })
+          const image = await Image.create({
+            imageId: uuidv4(),
+            url: files[i].path,
+          })
+          await ArticleImage.create({
+            articleImageId: uuidv4(),
+            ArticleId: article.articleId,
+            ImageId: image.imageId,
+            mainImage,
+          })
+        }
       }
 
       return res.json({
