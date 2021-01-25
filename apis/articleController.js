@@ -180,6 +180,7 @@ let articleController = {
           articleId: article.articleId,
           title: article.title,
           content: article.content,
+          category: article.category,
           images: pics
         }
       })
