@@ -36,13 +36,14 @@ let userController = {
       }
 
       // 簽發 token
-      var payload = { id: user.id }
+      var payload = { id: user.userId }
       var token = jwt.sign(payload, process.env.JWT_SECRET)
       return res.json({
-        status: 'success',
-        message: 'ok',
-        token: token,
-        user: { id: user.id, name: user.name }
+        message: '成功獲得token',
+        result: {
+          token: token,
+          user: { userId: user.userId, name: user.name }
+        }
       })
 
     } catch (err) {
