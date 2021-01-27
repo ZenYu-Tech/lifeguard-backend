@@ -16,8 +16,8 @@ let articleController = {
         where: {
           category, show: true
         },
-        attributes: ['articleId', 'title', 'content', 'category', 'createdAt', 'sort'],
-        order: ['sort'],
+        attributes: ['articleId', 'title', 'content', 'category', 'createdAt', 'sort', 'updatedAt'],
+        order: [['updatedAt', 'DESC']],
         limit: count,
         offset: (page - 1) * count,
         include: [
@@ -123,7 +123,7 @@ let articleController = {
           where: {
             show: true
           },
-          order: ['sort'],
+          order: [['updatedAt', 'DESC']],
           limit: Number(count),
           offset: (page - 1) * count,
         }

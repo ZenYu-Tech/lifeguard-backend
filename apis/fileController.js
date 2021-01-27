@@ -30,8 +30,8 @@ let fileController = {
     try {
       const files = await File.findAll({
         where: { category: req.params.category, show: true },
-        attributes: ['fileId', 'title', 'category', 'sort'],
-        order: ['sort'],
+        attributes: ['fileId', 'title', 'category', 'sort', 'updatedAt'],
+        order: [['updatedAt', 'DESC']],
       })
 
       return res.json({
@@ -51,8 +51,8 @@ let fileController = {
 
       const files = await File.findAndCountAll({
         where: { category: req.params.category },
-        attributes: ['fileId', 'title', 'url', 'category', 'createdAt', 'sort'],
-        order: ['sort'],
+        attributes: ['fileId', 'title', 'url', 'category', 'createdAt', 'sort', 'updatedAt'],
+        order: [['updatedAt', 'DESC']],
         limit: Number(count),
         offset: (page - 1) * count,
       })
