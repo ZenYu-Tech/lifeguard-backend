@@ -50,9 +50,9 @@ let articleController = {
             page,
             count,
             previous: page > 1
-              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page - 1}` : '',
+              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page - 1}` : null,
             next: totalPage > page
-              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page + 1}` : '',
+              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page + 1}` : null,
             totalCount: articles.count,
             totalPage
           },
@@ -79,7 +79,7 @@ let articleController = {
         }]
       })
 
-      const next = await Article.findOne({ where: { sort: article.sort + 1 } })
+      const next = await Article.findOne({ where: { category, sort: article.sort + 1 } })
 
       const pics = article.images.map(image => {
 
@@ -96,15 +96,19 @@ let articleController = {
       return res.json({
         message: '成功獲得文章',
         result: {
-          next: next !== null
-            ? `${process.env.DOMAIN}/article/${category}/${next.articleId}`
-            : '',
-          articleId: article.articleId,
-          title: article.title,
-          content: article.content,
-          category,
-          createdAt: article.createdAt,
-          images: pics
+          pagination: {
+            next: next !== null
+              ? `${process.env.DOMAIN}/${category}/${next.articleId}`
+              : null,
+          },
+          article: {
+            articleId: article.articleId,
+            title: article.title,
+            content: article.content,
+            category,
+            createdAt: article.createdAt,
+            images: pics
+          }
         }
       })
     } catch (err) {
@@ -138,9 +142,9 @@ let articleController = {
             page,
             count,
             previous: page > 1
-              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page - 1}` : '',
+              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page - 1}` : null,
             next: totalPage > page
-              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page + 1}` : '',
+              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page + 1}` : null,
             totalCount: articles.count,
             totalPage
           },
