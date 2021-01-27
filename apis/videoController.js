@@ -15,7 +15,7 @@ let videoController = {
       const videos = await Video.findAndCountAll(
         {
           where: { show: true },
-          order: ['sort'],
+          order: [['updatedAt', 'DESC']],
           limit: Number(count),
           offset: (page - 1) * count,
         },
@@ -63,7 +63,7 @@ let videoController = {
       const page = req.query.page || 1
       const videos = await Video.findAndCountAll(
         {
-          order: ['sort'],
+          order: [['updatedAt', 'DESC']],
           limit: Number(count),
           offset: (page - 1) * count,
         },
