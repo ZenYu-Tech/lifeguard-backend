@@ -43,9 +43,9 @@ let videoController = {
             page,
             count,
             previous: page > 1
-              ? `${process.env.DOMAIN}/video/?count=${count}&page=${page - 1}` : '',
+              ? `${process.env.DOMAIN}/video/?count=${count}&page=${page - 1}` : null,
             next: totalPage > page
-              ? `${process.env.DOMAIN}/video/?count=${count}&page=${page + 1}` : '',
+              ? `${process.env.DOMAIN}/video/?count=${count}&page=${page + 1}` : null,
             totalCount: videos.count,
             totalPage
           },
