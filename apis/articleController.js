@@ -3,6 +3,8 @@ const { Article, ArticleImage, Image } = db
 const path = require('path')
 const fs = require('fs')
 const { v4: uuidv4 } = require('uuid')
+const Sequelize = require('sequelize')
+const Op = Sequelize.Op;
 require('dotenv').config()
 
 let articleController = {
@@ -71,7 +73,7 @@ let articleController = {
 
       const article = await Article.findOne({
         where: { category, articleId: req.params.articleId, show: true },
-        attributes: ['articleId', 'title', 'content', 'category', 'sort', 'createdAt'],
+        attributes: ['articleId', 'title', 'content', 'category', 'sort', 'createdAt', 'updatedAt'],
         include: [{
           model: Image,
           as: 'images',
@@ -79,7 +81,15 @@ let articleController = {
         }]
       })
 
-      const next = await Article.findOne({ where: { category, sort: article.sort + 1 } })
+      const allArticleBefore = await Article.findAll({
+        attributes: ['articleId', 'updatedAt'],
+        order: [['updatedAt', 'DESC']],
+        where: {
+          updatedAt: {
+            [Op.lt]: article.updatedAt,
+          },
+        },
+      })
 
       const pics = article.images.map(image => {
 
@@ -97,8 +107,8 @@ let articleController = {
         message: '成功獲得文章',
         result: {
           pagination: {
-            next: next !== null
-              ? `${process.env.DOMAIN}/${category}/${next.articleId}`
+            next: allArticleBefore.length !== 0
+              ? `${process.env.DOMAIN}/${category}/${allArticleBefore[0].articleId}`
               : null,
           },
           article: {
@@ -120,7 +130,6 @@ let articleController = {
     try {
       const count = Number(req.query.count) || 10
       const page = Number(req.query.page) || 1
-      const category = req.params.category
 
       const articles = await Article.findAndCountAll(
         {
@@ -128,7 +137,7 @@ let articleController = {
             show: true
           },
           order: [['updatedAt', 'DESC']],
-          limit: Number(count),
+          limit: count,
           offset: (page - 1) * count,
         }
       )
@@ -142,9 +151,9 @@ let articleController = {
             page,
             count,
             previous: page > 1
-              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page - 1}` : null,
+              ? `${process.env.DOMAIN}/manage/article?count=${count}&page=${page - 1}` : null,
             next: totalPage > page
-              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page + 1}` : null,
+              ? `${process.env.DOMAIN}/manage/article?count=${count}&page=${page + 1}` : null,
             totalCount: articles.count,
             totalPage
           },
@@ -260,8 +269,6 @@ let articleController = {
       const { title, content, mainImageIndex } = req.body
       const { articleId, category } = req.params
       const { files } = req
-
-      console.log(mainImageIndex, 'mainImageIndex')
 
       if (!title) {
         return res.status(403).send({

@@ -1,7 +1,5 @@
 const db = require('../models')
 const { Video } = db
-const fs = require('fs')
-const path = require('path')
 const { v4: uuidv4 } = require('uuid')
 require('dotenv').config()
 
@@ -15,24 +13,25 @@ let videoController = {
       const videos = await Video.findAndCountAll(
         {
           where: { show: true },
+          attributes: ['videoId', 'title', 'embed', 'createdAt', 'sort', 'updatedAt'],
           order: [['updatedAt', 'DESC']],
-          limit: Number(count),
+          limit: count,
           offset: (page - 1) * count,
         },
       )
-      const dataWithPic = videos.rows.map(v => {
-        const pic = path.join(__dirname, '..', v.imageUrl)
-        let binaryData = fs.readFileSync(pic)
-        let base64String = new Buffer.from(binaryData).toString("base64")
+
+
+      const data = videos.rows.map(v => {
         return {
           videoId: v.videoId,
           title: v.title,
           embedIframe: v.embed,
           sort: v.sort,
           createdAt: v.createdAt,
-          image: base64String
         }
       })
+
+      console.log(data, 'data')
 
       const totalPage = Math.ceil(videos.count / count)
 
@@ -43,13 +42,13 @@ let videoController = {
             page,
             count,
             previous: page > 1
-              ? `${process.env.DOMAIN}/video/?count=${count}&page=${page - 1}` : null,
+              ? `${process.env.DOMAIN}/video?count=${count}&page=${page - 1}` : null,
             next: totalPage > page
-              ? `${process.env.DOMAIN}/video/?count=${count}&page=${page + 1}` : null,
+              ? `${process.env.DOMAIN}/video?count=${count}&page=${page + 1}` : null,
             totalCount: videos.count,
             totalPage
           },
-          videos: dataWithPic
+          videos: data
         }
       })
 
@@ -59,27 +58,25 @@ let videoController = {
   },
   backGetAllVideos: async (req, res) => {
     try {
-      const count = req.query.count || 10
-      const page = req.query.page || 1
+      const count = Number(req.query.count) || 10
+      const page = Number(req.query.page) || 1
       const videos = await Video.findAndCountAll(
         {
+          where: { show: true },
+          attributes: ['videoId', 'title', 'embed', 'createdAt', 'sort', 'updatedAt'],
           order: [['updatedAt', 'DESC']],
-          limit: Number(count),
+          limit: count,
           offset: (page - 1) * count,
         },
       )
-      const dataWithPic = videos.rows.map(v => {
-        const pic = path.join(__dirname, '..', v.imageUrl)
-        let binaryData = fs.readFileSync(pic)
-        let base64String = new Buffer.from(binaryData).toString("base64")
+
+      const data = videos.rows.map(v => {
         return {
           videoId: v.videoId,
           title: v.title,
           embedIframe: v.embed,
-          show: v.show,
           sort: v.sort,
           createdAt: v.createdAt,
-          image: base64String
         }
       })
 
@@ -92,7 +89,7 @@ let videoController = {
             totalCount: videos.count,
             totalPage: Math.ceil(videos.count / count)
           },
-          videos: dataWithPic
+          videos: data
         }
       })
     } catch (err) {

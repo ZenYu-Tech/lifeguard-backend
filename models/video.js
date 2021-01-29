@@ -8,7 +8,6 @@ module.exports = (sequelize, DataTypes) => {
     },
     title: DataTypes.TEXT,
     embed: DataTypes.TEXT,
-    imageUrl: DataTypes.TEXT,
     sort: DataTypes.INTEGER,
     show: DataTypes.BOOLEAN,
   }, {});

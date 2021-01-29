@@ -46,14 +46,14 @@ let fileController = {
   },
   backGetAllfiles: async (req, res) => {
     try {
-      const count = req.query.count || 10
-      const page = req.query.page || 1
+      const count = Number(req.query.count) || 10
+      const page = Number(req.query.page) || 1
 
       const files = await File.findAndCountAll({
         where: { category: req.params.category },
         attributes: ['fileId', 'title', 'url', 'category', 'createdAt', 'sort', 'updatedAt'],
         order: [['updatedAt', 'DESC']],
-        limit: Number(count),
+        limit: count,
         offset: (page - 1) * count,
       })
 
