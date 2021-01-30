@@ -23,14 +23,24 @@ let articleController = {
         limit: count,
         offset: (page - 1) * count,
         include: [
-          { model: ArticleImage, where: { mainImage: true }, include: { model: Image } }]
+          {
+            model: ArticleImage,
+            where: { mainImage: true },
+            include: { model: Image },
+            required: false
+          }]
       })
+
 
       const articleWithPicture = articles.rows.map(a => {
 
-        const pic = path.join(__dirname, '..', a.ArticleImages[0].Image.url)
-        let binaryData = fs.readFileSync(pic)
-        let base64String = new Buffer.from(binaryData).toString("base64")
+        let image = null
+
+        if (a.ArticleImages.length !== 0) {
+          const pic = path.join(__dirname, '..', a.ArticleImages[0].Image.url)
+          let binaryData = fs.readFileSync(pic)
+          image = new Buffer.from(binaryData).toString("base64")
+        }
 
         return {
           articleId: a.articleId,
@@ -39,7 +49,7 @@ let articleController = {
           category: a.category,
           sort: a.sort,
           createdAt: a.createdAt,
-          mainImage: base64String,
+          mainImage: image,
         }
       })
 
@@ -52,9 +62,9 @@ let articleController = {
             page,
             count,
             previous: page > 1
-              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page - 1}` : null,
+              ? `${process.env.DOMAIN}/article/${category}?count=${count}&page=${page - 1}` : null,
             next: totalPage > page
-              ? `${process.env.DOMAIN}/article/${category}/?count=${count}&page=${page + 1}` : null,
+              ? `${process.env.DOMAIN}/article/${category}?count=${count}&page=${page + 1}` : null,
             totalCount: articles.count,
             totalPage
           },
@@ -70,9 +80,11 @@ let articleController = {
   frontGetArticle: async (req, res) => {
     try {
       const category = req.params.category
+      const articleId = req.params.articleId
+      const pics = []
 
       const article = await Article.findOne({
-        where: { category, articleId: req.params.articleId, show: true },
+        where: { category, articleId, show: true },
         attributes: ['articleId', 'title', 'content', 'category', 'sort', 'createdAt', 'updatedAt'],
         include: [{
           model: Image,
@@ -80,6 +92,13 @@ let articleController = {
           attributes: ['imageId', 'url']
         }]
       })
+
+      if (!article) {
+        return res.status(403).send({
+          message: '錯誤請求',
+          result: {}
+        })
+      }
 
       const allArticleBefore = await Article.findAll({
         attributes: ['articleId', 'updatedAt'],
@@ -91,17 +110,21 @@ let articleController = {
         },
       })
 
-      const pics = article.images.map(image => {
+      if (article.images.length !== 0) {
+        article.images.forEach(image => {
 
-        const pic = path.join(__dirname, '..', image.url)
-        let binaryData = fs.readFileSync(pic)
-        let base64String = new Buffer.from(binaryData).toString("base64")
-        return {
-          imageId: image.imageId,
-          main: image.ArticleImage.mainImage,
-          image: base64String
-        }
-      })
+          const pic = path.join(__dirname, '..', image.url)
+          let binaryData = fs.readFileSync(pic)
+          let base64String = new Buffer.from(binaryData).toString("base64")
+
+          pics.push({
+            imageId: image.imageId,
+            main: image.ArticleImage.mainImage,
+            image: base64String
+          })
+
+        })
+      }
 
       return res.json({
         message: '成功獲得文章',
@@ -112,7 +135,7 @@ let articleController = {
               : null,
           },
           article: {
-            articleId: article.articleId,
+            articleId,
             title: article.title,
             content: article.content,
             category,
@@ -166,8 +189,13 @@ let articleController = {
   },
   backGetArticle: async (req, res) => {
     try {
+      const category = req.params.category
+      const articleId = req.params.articleId
+      const pics = []
+
+
       const article = await Article.findOne({
-        where: { category: req.params.category, articleId: req.params.articleId, show: true },
+        where: { category, articleId, show: true },
         include: [{
           model: Image,
           as: 'images',
@@ -175,25 +203,37 @@ let articleController = {
         }]
       })
 
-      const pics = article.images.map(image => {
+      if (!article) {
+        return res.status(403).send({
+          message: '錯誤請求',
+          result: {}
+        })
+      }
 
-        const pic = path.join(__dirname, '..', image.url)
-        let binaryData = fs.readFileSync(pic)
-        let base64String = new Buffer.from(binaryData).toString("base64")
-        return {
-          imageId: image.imageId,
-          main: image.ArticleImage.mainImage,
-          image: base64String
-        }
-      })
+      if (article.images.length !== 0) {
+
+        article.images.forEach(image => {
+
+          const pic = path.join(__dirname, '..', image.url)
+          let binaryData = fs.readFileSync(pic)
+          let base64String = new Buffer.from(binaryData).toString("base64")
+
+          pics.push({
+            imageId: image.imageId,
+            main: image.ArticleImage.mainImage,
+            image: base64String
+          })
+
+        })
+      }
 
       return res.json({
         message: '成功載入文章',
         result: {
-          articleId: article.articleId,
+          articleId,
           title: article.title,
           content: article.content,
-          category: article.category,
+          category,
           images: pics
         }
       })
@@ -206,6 +246,13 @@ let articleController = {
       const { title, content, mainImageIndex } = req.body
       const category = req.params.category
       const { files } = req
+
+      if (category !== 'experience' && category !== 'news') {
+        return res.status(403).send({
+          message: 'category 錯誤',
+          result: {}
+        })
+      }
 
       if (!title) {
         return res.status(403).send({
