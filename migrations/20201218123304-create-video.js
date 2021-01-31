@@ -13,9 +13,6 @@ module.exports = {
       embed: {
         type: Sequelize.TEXT
       },
-      imageUrl: {
-        type: Sequelize.TEXT
-      },
       sort: {
         type: Sequelize.INTEGER,
       },

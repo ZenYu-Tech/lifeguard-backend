@@ -12,7 +12,7 @@ module.exports = {
 
     const images = await Image.findAll()
 
-    const articles = await Article.findAll({ where: { category: 'news' } })
+    const articles = await Article.findAll({ where: { category: 'experience' } })
 
     articles.forEach(a => [
       articleIdArray.push(a.articleId)
@@ -23,15 +23,15 @@ module.exports = {
     ])
 
     return queryInterface.bulkInsert('ArticleImages',
-      Array.from({ length: 50 }).map((item, index) =>
-        ({
-          articleImageId: uuidv4(),
-          ArticleId: articleIdArray[index],
-          ImageId: imageIdArray[Math.floor(Math.random() * imageIdArray.length)],
-          mainImage: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })
+      Array.from({ length: articles.length }).map((item, index) =>
+      ({
+        articleImageId: uuidv4(),
+        ArticleId: articleIdArray[index],
+        ImageId: imageIdArray[Math.floor(Math.random() * imageIdArray.length)],
+        mainImage: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
       ), {});
   },
 
