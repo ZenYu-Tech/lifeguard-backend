@@ -89,7 +89,8 @@ let articleController = {
         include: [{
           model: Image,
           as: 'images',
-          attributes: ['imageId', 'url']
+          attributes: ['imageId', 'url'],
+          required: false
         }]
       })
 
@@ -104,6 +105,7 @@ let articleController = {
         attributes: ['articleId', 'updatedAt'],
         order: [['updatedAt', 'DESC']],
         where: {
+          category,
           updatedAt: {
             [Op.lt]: article.updatedAt,
           },
