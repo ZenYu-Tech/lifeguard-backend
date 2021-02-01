@@ -31,8 +31,6 @@ let videoController = {
         }
       })
 
-      console.log(data, 'data')
-
       const totalPage = Math.ceil(videos.count / count)
 
       return res.json({
