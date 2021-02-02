@@ -3,9 +3,11 @@ const { Article, ArticleImage, Image } = db
 const path = require('path')
 const fs = require('fs')
 const { v4: uuidv4 } = require('uuid')
+const monent = require('moment')
 const Sequelize = require('sequelize')
 const Op = Sequelize.Op;
 require('dotenv').config()
+
 
 let articleController = {
   frontGetAllArticles: async (req, res) => {
@@ -31,7 +33,6 @@ let articleController = {
           }]
       })
 
-
       const articleWithPicture = articles.rows.map(a => {
 
         let image = null
@@ -48,7 +49,7 @@ let articleController = {
           content: a.content,
           category: a.category,
           sort: a.sort,
-          createdAt: a.createdAt,
+          createdAt: monent(a.createdAt).tz('Asia/Taipei').format('YYYY-MM-DD HH:mm:ss'),
           mainImage: image,
         }
       })
@@ -141,7 +142,7 @@ let articleController = {
             title: article.title,
             content: article.content,
             category,
-            createdAt: article.createdAt,
+            createdAt: monent(a.createdAt).tz('Asia/Taipei').format('YYYY-MM-DD HH:mm:ss'),
             images: pics
           }
         }
@@ -201,7 +202,8 @@ let articleController = {
         include: [{
           model: Image,
           as: 'images',
-          attributes: ['imageId', 'url']
+          attributes: ['imageId', 'url'],
+          required: false
         }]
       })
 
