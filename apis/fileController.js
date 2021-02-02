@@ -4,7 +4,7 @@ const path = require('path')
 const { File } = db
 const { v4: uuidv4 } = require('uuid')
 const Sequelize = require('sequelize')
-const Op = Sequelize.Op;
+const Op = Sequelize.Op
 
 let fileController = {
 
@@ -30,11 +30,7 @@ let fileController = {
   },
   preloadFiles: async (req, res) => {
     try {
-
-      let reg = []
-      let plan = ''
-      let training = ''
-
+      const files = []
       const preload = await File.findAll({
         where: {
           show: true,
@@ -46,22 +42,22 @@ let fileController = {
 
       preload.forEach(file => {
         if (file.category === 'registration') {
-          reg.push({ ...file.dataValues, extension: file.url.split('.')[1] })
+          files.push({ ...file.dataValues, extension: file.url.split('.')[1] })
         }
 
         if (file.category === 'plan') {
-          plan = { ...file.dataValues, extension: file.url.split('.')[1] }
+          files.push({ ...file.dataValues, extension: file.url.split('.')[1] })
         }
 
         if (file.category === 'training') {
-          training = { ...file.dataValues, extension: file.url.split('.')[1] }
+          files.push({ ...file.dataValues, extension: file.url.split('.')[1] })
         }
-      });
+      })
 
       return res.json({
         message: '成功獲得檔案',
         result: {
-          files: { reg, plan, training }
+          files
         }
       })
 
@@ -73,14 +69,12 @@ let fileController = {
     try {
       const files = await File.findAll({
         where: { category: req.params.category, show: true },
-        attributes: ['fileId', 'title', 'category', 'sort', 'updatedAt'],
         order: [['updatedAt', 'DESC']],
       })
-
       return res.json({
         message: '成功獲得檔案',
         result: {
-          files: files
+          files: files.map(file => ({ ...file.dataValues, extension: file.url.split('.')[1] }))
         }
       })
     } catch (err) {

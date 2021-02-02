@@ -20,7 +20,8 @@ module.exports = {
         const url = index > 2
           ? `upload/file/${category[randomIndex]}/default.pdf`
           : array[index]
-        const title = url.split('/')[2]
+        const extension = url.split('.')[1]
+        const title = url.split('/')[2] + '.' + extension
         return {
           fileId: uuidv4(),
           category: index > 2
