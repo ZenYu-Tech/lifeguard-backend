@@ -27,7 +27,7 @@ let videoController = {
           title: v.title,
           embedIframe: v.embed,
           sort: v.sort,
-          createdAt: v.createdAt,
+          createdAt: monent(v.createdAt).tz('Asia/Taipei').format('YYYY-MM-DD HH:mm:ss'),
         }
       })
 
@@ -74,7 +74,7 @@ let videoController = {
           title: v.title,
           embedIframe: v.embed,
           sort: v.sort,
-          createdAt: v.createdAt,
+          createdAt: monent(v.createdAt).tz('Asia/Taipei').format('YYYY-MM-DD HH:mm:ss'),
         }
       })
 

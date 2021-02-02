@@ -3,6 +3,8 @@ const fs = require('fs')
 const path = require('path')
 const { File } = db
 const { v4: uuidv4 } = require('uuid')
+const Sequelize = require('sequelize')
+const Op = Sequelize.Op
 
 let fileController = {
 
@@ -26,18 +28,53 @@ let fileController = {
       console.log(err)
     }
   },
-  getAllFiles: async (req, res) => {
+  preloadFiles: async (req, res) => {
     try {
-      const files = await File.findAll({
-        where: { category: req.params.category, show: true },
-        attributes: ['fileId', 'title', 'category', 'sort', 'updatedAt'],
-        order: [['updatedAt', 'DESC']],
+      const files = []
+      const preload = await File.findAll({
+        where: {
+          show: true,
+          category: {
+            [Op.ne]: 'certification'
+          }
+        }
+      })
+
+      preload.forEach(file => {
+        if (file.category === 'registration') {
+          files.push({ ...file.dataValues, extension: file.url.split('.')[1] })
+        }
+
+        if (file.category === 'plan') {
+          files.push({ ...file.dataValues, extension: file.url.split('.')[1] })
+        }
+
+        if (file.category === 'training') {
+          files.push({ ...file.dataValues, extension: file.url.split('.')[1] })
+        }
       })
 
       return res.json({
         message: '成功獲得檔案',
         result: {
-          files: files
+          files
+        }
+      })
+
+    } catch (err) {
+      console.log(err)
+    }
+  },
+  getAllFiles: async (req, res) => {
+    try {
+      const files = await File.findAll({
+        where: { category: req.params.category, show: true },
+        order: [['updatedAt', 'DESC']],
+      })
+      return res.json({
+        message: '成功獲得檔案',
+        result: {
+          files: files.map(file => ({ ...file.dataValues, extension: file.url.split('.')[1] }))
         }
       })
     } catch (err) {
@@ -50,8 +87,8 @@ let fileController = {
       const page = Number(req.query.page) || 1
 
       const files = await File.findAndCountAll({
-        where: { category: req.params.category },
-        attributes: ['fileId', 'title', 'url', 'category', 'createdAt', 'sort', 'updatedAt'],
+        where: { category: req.params.category, show: true },
+        attributes: ['fileId', 'title', 'url', 'category', 'sort', 'updatedAt'],
         order: [['updatedAt', 'DESC']],
         limit: count,
         offset: (page - 1) * count,
@@ -98,10 +135,10 @@ let fileController = {
 
       await File.create({
         fileId: uuidv4(),
-        title: req.body.title,
-        category: category,
+        title,
+        category,
         url: file.path,
-        sort: await File.count({ where: { category: category } }) + 1,
+        sort: await File.count({ where: { category } }) + 1,
       })
 
       return res.json({
@@ -115,6 +152,7 @@ let fileController = {
   editFile: async (req, res) => {
     try {
       const { title } = req.body
+      const { category, fileId } = req.params
       const { file } = req
 
       if (!title) {
@@ -125,25 +163,52 @@ let fileController = {
       }
 
       if (file) {
-        const theFile = await File.findOne({ where: { fileId: req.params.fileId } })
+        if (category !== 'certification') {
 
-        const delPath = path.join(__dirname, '..', theFile.url)
-        fs.unlinkSync(delPath)
+          const oldFile = await File.findOne({ where: { category, fileId: fileId } })
 
-        await theFile.update({
-          title: title,
-          url: file.path
-        })
+          await oldFile.update({
+            show: false
+          })
 
-        return res.json({
-          message: '成功編輯檔案',
-          result: {}
-        })
+          await File.create({
+            fileId: uuidv4(),
+            title,
+            category,
+            sort:
+              await File.count({
+                where: {
+                  category,
+                  url: { [Op.like]: '%' + file.originalname.split('.')[1] + '%' }
+                }
+              }) + 1,
+            url: file.path
+          })
+
+          return res.json({
+            message: '成功編輯檔案',
+            result: {}
+          })
+        } else {
+          //certification edit file
+          const oldFile = await File.findOne({ where: { category, fileId } })
+
+          await oldFile.update({
+            title,
+            url: file.path
+          })
+
+          return res.json({
+            message: '成功編輯檔案',
+            result: {}
+          })
+        }
       } else {
-        const theFile = await File.findOne({ where: { fileId: req.params.fileId } })
+        //no file update
+        const oldFile = await File.findOne({ where: { category, fileId } })
 
-        await theFile.update({
-          title: req.body.title,
+        await oldFile.update({
+          title,
         })
 
         return res.json({
@@ -151,6 +216,7 @@ let fileController = {
           result: {}
         })
       }
+
 
     } catch (err) {
       console.log(err)
