@@ -4,10 +4,12 @@ const { v4: uuidv4 } = require('uuid')
 let array = [
   'upload/file/registration/test.doc',
   'upload/file/registration/test.pdf',
-  'upload/file/registration/test.odt'
+  'upload/file/registration/test.odt',
+  'upload/file/plan/default.pdf',
+  'upload/file/training/default.pdf'
 ]
 
-let category = ['certification', 'plan', 'training']
+// let category = ['certification', 'plan', 'training']
 
 
 module.exports = {
@@ -15,19 +17,19 @@ module.exports = {
     return queryInterface.bulkInsert('Files',
       Array.from({ length: 10 }).map((item, index) => {
 
-        const randomIndex = Math.floor(Math.random() * 3)
+        // const randomIndex = Math.floor(Math.random() * 3)
 
-        const url = index > 2
-          ? `upload/file/${category[randomIndex]}/default.pdf`
+        const url = index > 4
+          ? 'upload/file/certification/default.pdf'
           : array[index]
-        const extension = url.split('.')[1]
-        const title = url.split('/')[2] + '.' + extension
         return {
           fileId: uuidv4(),
-          category: index > 2
-            ? category[randomIndex]
-            : 'registration',
-          title,
+          category: index > 4
+            ? url.split('/')[2]
+            : url.split('/')[2],
+          title: index > 4
+            ? url.split('/')[2]
+            : url.split('/')[2] + '_title',
           url,
           sort: index + 1,
           show: true,
