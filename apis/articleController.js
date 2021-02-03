@@ -278,6 +278,8 @@ let articleController = {
         })
       }
 
+      console.log('error pass')
+
       const article = await Article.create({
         articleId: uuidv4(),
         title,
@@ -286,8 +288,15 @@ let articleController = {
         sort: await Article.count({ where: { category: category } }) + 1,
       })
 
+      console.log('article created')
+
       if (files.length !== 0) {
+
+        console.log('image created')
+
         for (i = 0; files.length > i; i++) {
+
+          console.log('create' + i)
 
           let mainImage = false
           if (i === Number(mainImageIndex)) { mainImage = true }
@@ -297,12 +306,17 @@ let articleController = {
             url: files[i].path,
           })
 
-          await ArticleImage.create({
+          console.log('image', image)
+
+          const at = await ArticleImage.create({
             articleImageId: uuidv4(),
             ArticleId: article.articleId,
             ImageId: image.imageId,
             mainImage,
           })
+
+          console.log(at, 'at')
+
         }
       }
 
