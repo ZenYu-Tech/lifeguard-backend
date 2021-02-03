@@ -27,7 +27,7 @@ let videoController = {
           title: v.title,
           embedIframe: v.embed,
           sort: v.sort,
-          createdAt: monent(v.createdAt).tz('Asia/Taipei').format('YYYY-MM-DD HH:mm:ss'),
+          createdAt: new Date(v.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Taipei', hour12: false }),
         }
       })
 
@@ -74,7 +74,7 @@ let videoController = {
           title: v.title,
           embedIframe: v.embed,
           sort: v.sort,
-          createdAt: monent(v.createdAt).tz('Asia/Taipei').format('YYYY-MM-DD HH:mm:ss'),
+          createdAt: new Date(v.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Taipei', hour12: false }),
         }
       })
 

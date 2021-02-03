@@ -3,7 +3,6 @@ const { Article, ArticleImage, Image } = db
 const path = require('path')
 const fs = require('fs')
 const { v4: uuidv4 } = require('uuid')
-const monent = require('moment')
 const Sequelize = require('sequelize')
 const Op = Sequelize.Op;
 require('dotenv').config()
@@ -49,7 +48,7 @@ let articleController = {
           content: a.content,
           category: a.category,
           sort: a.sort,
-          createdAt: monent(a.createdAt).tz('Asia/Taipei').format('YYYY-MM-DD HH:mm:ss'),
+          createdAt: new Date(a.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Taipei', hour12: false }),
           mainImage: image,
         }
       })
@@ -142,7 +141,7 @@ let articleController = {
             title: article.title,
             content: article.content,
             category,
-            createdAt: monent(a.createdAt).tz('Asia/Taipei').format('YYYY-MM-DD HH:mm:ss'),
+            createdAt: new Date(a.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Taipei', hour12: false }),
             images: pics
           }
         }
