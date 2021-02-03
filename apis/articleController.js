@@ -339,6 +339,13 @@ let articleController = {
         where: { category: category, articleId: articleId }
       })
 
+      if (!article) {
+        return res.status(403).send({
+          message: '文章請求錯誤',
+          result: {}
+        })
+      }
+
       await article.update({ title, content })
 
       //identify old image is main image or not
