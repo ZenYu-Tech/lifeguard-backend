@@ -141,7 +141,7 @@ let articleController = {
             title: article.title,
             content: article.content,
             category,
-            createdAt: new Date(a.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Taipei', hour12: false }),
+            createdAt: new Date(article.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Taipei', hour12: false }),
             images: pics
           }
         }
