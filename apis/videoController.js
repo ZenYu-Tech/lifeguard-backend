@@ -20,7 +20,6 @@ let videoController = {
         },
       )
 
-
       const data = videos.rows.map(v => {
         return {
           videoId: v.videoId,
