@@ -19,7 +19,7 @@ let articleController = {
         where: {
           category, show: true
         },
-        attributes: ['articleId', 'title', 'content', 'category', 'createdAt', 'sort', 'updatedAt'],
+        attributes: ['articleId', 'title', 'mainPoint', 'content', 'category', 'createdAt', 'sort', 'updatedAt'],
         order: [['updatedAt', 'DESC']],
         limit: count,
         offset: (page - 1) * count,
@@ -45,6 +45,7 @@ let articleController = {
         return {
           articleId: a.articleId,
           title: a.title,
+          mainPoint: a.mainPoint,
           content: a.content,
           category: a.category,
           sort: a.sort,
@@ -247,6 +248,7 @@ let articleController = {
   createArticle: async (req, res) => {
     try {
       const { title, content, mainImageIndex } = req.body
+      const mainPoint = req.body.mainPoint || ''
       const category = req.params.category
       const { files } = req
 
@@ -283,6 +285,7 @@ let articleController = {
       const article = await Article.create({
         articleId: uuidv4(),
         title,
+        mainPoint,
         category,
         content,
         sort: await Article.count({ where: { category: category } }) + 1,
@@ -331,6 +334,7 @@ let articleController = {
   editArticle: async (req, res) => {
     try {
       const { title, content, mainImageIndex } = req.body
+      const mainPoint = req.body.mainPoint || ''
       const { articleId, category } = req.params
       const { files } = req
 
@@ -360,7 +364,7 @@ let articleController = {
         })
       }
 
-      await article.update({ title, content })
+      await article.update({ title, mainPoint, content })
 
       //identify old image is main image or not
       const orignalMainImage = await ArticleImage.findOne({ where: { ArticleId: articleId, mainImage: true } })

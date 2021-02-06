@@ -14,6 +14,9 @@ module.exports = {
       title: {
         type: Sequelize.TEXT
       },
+      mainPoint: {
+        type: Sequelize.STRING
+      },
       content: {
         type: Sequelize.TEXT('long')
       },

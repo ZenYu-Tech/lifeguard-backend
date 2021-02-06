@@ -8,6 +8,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     category: DataTypes.TEXT,
     title: DataTypes.TEXT,
+    mainPoint: DataTypes.TEXT,
     content: DataTypes.TEXT('long'),
     sort: {
       type: DataTypes.INTEGER,
