@@ -26,7 +26,7 @@ let videoController = {
           title: v.title,
           embedIframe: v.embed,
           sort: v.sort,
-          createdAt: new Date(v.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Taipei', hour12: false }),
+          createdAt: v.createdAt,
         }
       })
 
@@ -73,7 +73,7 @@ let videoController = {
           title: v.title,
           embedIframe: v.embed,
           sort: v.sort,
-          createdAt: new Date(v.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Taipei', hour12: false }),
+          createdAt: v.createdAt,
         }
       })
 
