@@ -49,7 +49,7 @@ let articleController = {
           content: a.content,
           category: a.category,
           sort: a.sort,
-          createdAt: new Date(a.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Taipei', hour12: false }),
+          createdAt: a.createdAt,
           mainImage: image,
         }
       })
@@ -142,7 +142,7 @@ let articleController = {
             title: article.title,
             content: article.content,
             category,
-            createdAt: new Date(article.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Taipei', hour12: false }),
+            createdAt: article.createdAt,
             images: pics
           }
         }
