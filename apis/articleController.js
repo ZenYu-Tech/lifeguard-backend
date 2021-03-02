@@ -38,6 +38,9 @@ let articleController = {
 
         if (a.ArticleImages.length !== 0) {
           const pic = path.join(__dirname, '..', a.ArticleImages[0].Image.url)
+
+          console.log(pic, 'pic')
+
           let binaryData = fs.readFileSync(pic)
           image = new Buffer.from(binaryData).toString("base64")
         }
@@ -370,6 +373,9 @@ let articleController = {
       const orignalMainImage = await ArticleImage.findOne({ where: { ArticleId: articleId, mainImage: true } })
 
       if (orignalMainImage) {
+
+        console.log(mainImageIndex, 'mainImageIndex')
+        console.log(orignalMainImage.ImageId, 'orignalMainImage')
 
         if (orignalMainImage.ImageId !== mainImageIndex) {
 
