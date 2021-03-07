@@ -239,6 +239,7 @@ let articleController = {
         result: {
           articleId,
           title: article.title,
+          mainPoint: article.mainPoint,
           content: article.content,
           category,
           images: pics
