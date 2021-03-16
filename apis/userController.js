@@ -48,8 +48,59 @@ let userController = {
     } catch (err) {
       console.log(err)
     }
-  }
+  },
+  editUser: async (req, res) => {
+    try {
+      const userId = req.body.userId
+      const account = req.body.account
+      const oldPassword = req.body.oldPassword
+      const newPassword = req.body.newPassword
 
+      if (!account) {
+        return res.status(403).send({
+          message: '請輸入帳號',
+          result: {}
+        })
+      }
+
+      if (!oldPassword) {
+        return res.status(403).send({
+          message: '請輸入密碼',
+          result: {}
+        })
+      }
+
+      if (!newPassword) {
+        return res.status(403).send({
+          message: '請輸入新密碼',
+          result: {}
+        })
+      }
+
+      const user = await User.findOne({ where: { userId } })
+
+      if (bcrypt.compareSync(oldPassword, user.password)) {
+
+        await user.update({
+          account,
+          password: newPassword
+        })
+
+        return res.json({
+          message: "User修改成功！",
+          result: {}
+        })
+
+      } else {
+        return res.status(401).json({ message: '密碼錯誤', result: {} })
+      }
+
+    } catch (err) {
+      console.log(err)
+    }
+
+
+  }
 }
 
 
