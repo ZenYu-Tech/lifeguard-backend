@@ -13,14 +13,14 @@ module.exports = {
 
     return queryInterface.bulkInsert('Users',
       Array.from({ length: 1 }).map((item, index) =>
-        ({
-          userId: uuidv4(),
-          account: 'lifeguard2020',
-          password: hash,
-          role: 'admin',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })
+      ({
+        userId: uuidv4(),
+        account: 'gephaa',
+        password: hash,
+        role: 'admin',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
       ), {});
   },
 

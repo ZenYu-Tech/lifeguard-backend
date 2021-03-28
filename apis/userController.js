@@ -27,11 +27,11 @@ let userController = {
       const user = await User.findOne({ where: { account: account } })
 
       if (!user) {
-        return res.status(401).json({ message: '找不到您的帳號', result: {} })
+        return res.status(403).json({ message: '找不到您的帳號', result: {} })
       }
 
       if (!bcrypt.compareSync(password, user.password)) {
-        return res.status(401).json({ message: '密碼錯誤', result: {} })
+        return res.status(403).json({ message: '密碼錯誤', result: {} })
       }
 
       // 簽發 token
