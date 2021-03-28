@@ -11,14 +11,14 @@ let userController = {
       const password = req.body.password
 
       if (!account) {
-        return res.status(403).send({
+        return res.status(401).send({
           message: '請輸入帳號',
           result: {}
         })
       }
 
       if (!password) {
-        return res.status(403).send({
+        return res.status(401).send({
           message: '請輸入密碼',
           result: {}
         })
